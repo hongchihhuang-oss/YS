@@ -1,440 +1,2231 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>IELTS 雅思單字 (v39 內容修復)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Roboto', 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        .flip-container { perspective: 1000px; width: 100%; min-height: 520px; position: relative; }
-        .flipper { display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; width: 100%; height: 100%; }
-        .flip-face { grid-area: 1 / 1 / 2 / 2; backface-visibility: hidden; -webkit-backface-visibility: hidden; width: 100%; height: 100%; border-radius: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
-        .face-front { z-index: 2; transform: rotateY(0deg); }
-        .face-back { transform: rotateY(180deg); z-index: 1; }
-        .flipped { transform: rotateY(180deg); }
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { BookOpen, RotateCw, Volume2, ArrowLeft, ArrowRight, Layers, Keyboard, Check, CheckCircle, XCircle, Trophy, School, ArrowRightCircle, Database, Save, AlertTriangle } from 'lucide-react';
 
-        .playing { color: #22c55e !important; transform: scale(1.1); }
-        .btn-touch:active { transform: scale(0.96); opacity: 0.9; }
-        
-        .overlay-msg { position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; background: rgba(255,255,255,0.95); }
-        .overlay-msg.active { opacity: 1; }
-        .icon-anim { animation: icon-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes icon-pop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        
-        .modal { background-color: rgba(0,0,0,0.6); }
-        .card-scroll::-webkit-scrollbar { width: 4px; }
-        .card-scroll::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 4px; }
-        .spell-correct { border-color: #22c55e !important; background-color: #f0fdf4; color: #16a34a; }
-        .spell-wrong { border-color: #ef4444 !important; background-color: #fef2f2; color: #dc2626; }
-    </style>
-</head>
-<body class="bg-slate-100 flex flex-col items-center min-h-screen text-slate-800 p-4 pb-20">
+// =================================================================================
+// 📚 VOCABULARY RESOURCE LIBRARY (單字資源庫 - 詞性分離版)
+// =================================================================================
+const VOCAB_LIBRARY = [
+  // === Column 1 ===
+  {
+    id: 1001,
+    word: "Abbreviate",
+    ipa: "/əˈbriː.vi.eɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "縮寫；縮短",
+        def_en: "to shorten a word or text",
+        sentence: "In academic writing, technical terms are often abbreviated after their first full mention to improve readability.",
+        sentence_trans: "在學術寫作中，專有名詞通常在第一次完整提及後會使用縮寫，以提高可讀性。"
+      }]
+    }]
+  },
+  {
+    id: 1002,
+    word: "Abide",
+    ipa: "/əˈbaɪd/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "遵守；忍受",
+        def_en: "to accept or act in accordance with a rule, decision, or recommendation",
+        sentence: "All international students must abide by the visa regulations set forth by the host country's government.",
+        sentence_trans: "所有國際學生都必須遵守地主國政府制定的簽證法規。"
+      }]
+    }]
+  },
+  {
+    id: 1003,
+    word: "Abnormal",
+    ipa: "/æbˈnɔː.məl/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "不正常的；反常的",
+        def_en: "deviating from what is normal or usual",
+        sentence: "The laboratory tests revealed abnormal levels of pollutants in the river, prompting an immediate investigation.",
+        sentence_trans: "實驗室檢測顯示河川中的污染物含量異常，促使當局立即展開調查。"
+      }]
+    }]
+  },
+  {
+    id: 1004,
+    word: "Abolish",
+    ipa: "/əˈbɒl.ɪʃ/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "廢除；廢止",
+        def_en: "to formally put an end to a system, practice, or institution",
+        sentence: "There is a growing consensus among activists that capital punishment should be abolished worldwide.",
+        sentence_trans: "激進份子之間越來越有共識，認為應該在全世界廢除死刑。"
+      }]
+    }]
+  },
+  {
+    id: 1005,
+    word: "Aboriginal",
+    ipa: "/ˌæb.əˈrɪdʒ.ən.əl/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "原住民的；土著的",
+        def_en: "inhabiting or existing in a land from the earliest times",
+        sentence: "Preserving aboriginal languages is crucial for maintaining the cultural heritage of indigenous communities.",
+        sentence_trans: "保存原住民語言對於維護原住民社群的文化遺產至關重要。"
+      }]
+    }, {
+      pos: "n.",
+      items: [{
+        def_zh: "原住民",
+        def_en: "an aboriginal inhabitant of a place",
+        sentence: "The museum exhibition highlights the art and history of the Australian Aboriginals.",
+        sentence_trans: "博物館展覽突出了澳洲原住民的藝術與歷史。"
+      }]
+    }]
+  },
+  {
+    id: 1006,
+    word: "Abortion",
+    ipa: "/əˈbɔː.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "墮胎",
+        def_en: "the deliberate termination of a human pregnancy",
+        sentence: "The debate surrounding abortion laws remains one of the most polarized issues in contemporary politics.",
+        sentence_trans: "圍繞墮胎法的辯論仍然是當代政治中最兩極分化的議題之一。"
+      }]
+    }]
+  },
+  {
+    id: 1007,
+    word: "Abound",
+    ipa: "/əˈbaʊnd/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "充滿；大量存在",
+        def_en: "to exist in large numbers or amounts",
+        sentence: "Theories abound regarding the sudden disappearance of the ancient civilization.",
+        sentence_trans: "關於這個古老文明突然消失的理論眾說紛紜。"
+      }]
+    }]
+  },
+  {
+    id: 1008,
+    word: "Abrupt",
+    ipa: "/əˈbrʌpt/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "突然的；唐突的",
+        def_en: "sudden and unexpected",
+        sentence: "The project came to an abrupt halt due to a sudden withdrawal of funding from the primary investor.",
+        sentence_trans: "由於主要投資者突然撤資，該項目戛然而止。"
+      }]
+    }]
+  },
+  {
+    id: 1009,
+    word: "Abstraction",
+    ipa: "/æbˈstræk.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "抽象概念",
+        def_en: "the quality of dealing with ideas rather than events",
+        sentence: "Philosophical discussions often involve a high level of abstraction that can be difficult for laypeople to grasp.",
+        sentence_trans: "哲學討論通常涉及高層次的抽象概念，外行人可能難以理解。"
+      }]
+    }]
+  },
+  {
+    id: 1010,
+    word: "Absurd",
+    ipa: "/əbˈsɜːd/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "荒謬的；可笑的",
+        def_en: "wildly unreasonable, illogical, or inappropriate",
+        sentence: "The suggestion that the problem could be solved without any financial investment was dismissed as absurd.",
+        sentence_trans: "關於不需任何資金投入就能解決問題的建議被斥為荒謬。"
+      }]
+    }]
+  },
+  {
+    id: 1011,
+    word: "Abundance",
+    ipa: "/əˈbʌn.dəns/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "豐富；充足",
+        def_en: "a very large quantity of something",
+        sentence: "The tropical rainforest is characterized by an abundance of biodiversity found nowhere else on Earth.",
+        sentence_trans: "熱帶雨林的特徵是擁有地球上其他地方找不到的豐富生物多樣性。"
+      }]
+    }]
+  },
+  {
+    id: 1012,
+    word: "Abundant",
+    ipa: "/əˈbʌn.dənt/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "豐富的；大量的",
+        def_en: "existing or available in large quantities",
+        sentence: "Solar energy is an abundant resource that has the potential to replace fossil fuels.",
+        sentence_trans: "太陽能是一種豐富的資源，有潛力取代化石燃料。"
+      }]
+    }]
+  },
+  {
+    id: 1013,
+    word: "Abuse",
+    ipa: "/əˈbjuːz/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "濫用；弊端",
+        def_en: "the use of something in a way that is wrong or harmful",
+        sentence: "The investigation revealed a systemic abuse of power within the organization's leadership.",
+        sentence_trans: "調查顯示該組織領導層內部存在系統性的權力濫用。"
+      }]
+    }, {
+      pos: "v.",
+      items: [{
+        def_zh: "濫用；虐待",
+        def_en: "use (something) to bad effect or for a bad purpose",
+        sentence: "He vowed never to abuse the trust that had been placed in him by the public.",
+        sentence_trans: "他發誓絕不濫用公眾對他的信任。"
+      }]
+    }]
+  },
+  {
+    id: 1014,
+    word: "Academy",
+    ipa: "/əˈkæd.ə.mi/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "學院；學會",
+        def_en: "a place of study or training in a special field",
+        sentence: "He was inducted into the academy for his significant contributions to the field of theoretical physics.",
+        sentence_trans: "因其對理論物理領域的重大貢獻，他被納入該學會。"
+      }]
+    }]
+  },
+  {
+    id: 1015,
+    word: "Accelerate",
+    ipa: "/əkˈsel.ə.reɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "加速；促進",
+        def_en: "(of a vehicle or other physical object) begin to move more quickly",
+        sentence: "The government has implemented new policies to accelerate economic growth in rural areas.",
+        sentence_trans: "政府已實施新政策以加速農村地區的經濟增長。"
+      }]
+    }]
+  },
+  {
+    id: 1016,
+    word: "Accessible",
+    ipa: "/əkˈses.ə.bəl/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "可存取的；易接近的",
+        def_en: "able to be reached or entered",
+        sentence: "Higher education should be made accessible to students from all socio-economic backgrounds.",
+        sentence_trans: "高等教育應讓所有社會經濟背景的學生都能獲得。"
+      }]
+    }]
+  },
+  {
+    id: 1017,
+    word: "Accessory",
+    ipa: "/əkˈses.ər.i/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "配件；附件",
+        def_en: "a thing which can be added to something else in order to make it more useful, versatile, or attractive",
+        sentence: "In the fashion industry, the right accessory can transform a simple outfit into a statement piece.",
+        sentence_trans: "在時尚界，合適的配件可以將簡單的服裝轉變為引人注目的焦點。"
+      }]
+    }]
+  },
+  {
+    id: 1018,
+    word: "Acclaim",
+    ipa: "/əˈkleɪm/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "稱讚；好評",
+        def_en: "enthusiastic and public praise",
+        sentence: "Her debut novel received critical acclaim for its innovative narrative structure.",
+        sentence_trans: "她的處女作小說因其創新的敘事結構而獲得評論界的讚譽。"
+      }]
+    }, {
+      pos: "v.",
+      items: [{
+        def_zh: "稱讚；為...喝采",
+        def_en: "praise enthusiastically and publicly",
+        sentence: "The critics acclaimed the movie as a masterpiece of modern cinema.",
+        sentence_trans: "評論家稱讚這部電影是現代電影的傑作。"
+      }]
+    }]
+  },
+  {
+    id: 1019,
+    word: "Accommodate",
+    ipa: "/əˈkɒm.ə.deɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "容納；配合",
+        def_en: "provide lodging or sufficient space for",
+        sentence: "The new conference center is designed to accommodate up to five thousand delegates.",
+        sentence_trans: "新的會議中心設計可容納多達五千名代表。"
+      }]
+    }]
+  },
+  {
+    id: 1020,
+    word: "Accommodation",
+    ipa: "/əˌkɒm.əˈdeɪ.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "住宿；膳宿",
+        def_en: "a room, group of rooms, or building in which someone may live or stay",
+        sentence: "Finding affordable accommodation in major metropolitan areas is becoming increasingly difficult for students.",
+        sentence_trans: "對於學生來說，在主要大都會區尋找負擔得起的住宿變得越來越困難。"
+      }]
+    }]
+  },
+  {
+    id: 1021,
+    word: "Accord",
+    ipa: "/əˈkɔːd/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "協議；條約",
+        def_en: "an official agreement or treaty",
+        sentence: "The two nations finally reached a peace accord after months of intense negotiation.",
+        sentence_trans: "經過數月的激烈談判，兩國終於達成了和平協議。"
+      }]
+    }, {
+      pos: "v.",
+      items: [{
+        def_zh: "給予；與...一致",
+        def_en: "give or grant someone (power, status, or recognition)",
+        sentence: "The powers accorded to the head of state are strictly limited by the constitution.",
+        sentence_trans: "憲法嚴格限制了賦予國家元首的權力。"
+      }]
+    }]
+  },
+  {
+    id: 1022,
+    word: "Accordance",
+    ipa: "/əˈkɔː.dəns/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "一致；依照",
+        def_en: "in a manner conforming with",
+        sentence: "The project was completed in strict accordance with the safety regulations.",
+        sentence_trans: "該項目是嚴格按照安全規定完成的。"
+      }]
+    }]
+  },
+  {
+    id: 1023,
+    word: "Accordingly",
+    ipa: "/əˈkɔː.dɪŋ.li/",
+    priority: 10,
+    meanings: [{
+      pos: "adv.",
+      items: [{
+        def_zh: "因此；相應地",
+        def_en: "in a way that is appropriate to the particular circumstances",
+        sentence: "The budget has been reduced, and our operational plans must be adjusted accordingly.",
+        sentence_trans: "預算已被削減，我們的運營計劃必須相應調整。"
+      }]
+    }]
+  },
+  {
+    id: 1024,
+    word: "Accountable",
+    ipa: "/əˈkaʊn.tə.bəl/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "負有責任的",
+        def_en: "required or expected to justify actions or decisions",
+        sentence: "Public officials must be held accountable for their decisions to ensure transparency in government.",
+        sentence_trans: "公職人員必須對其決定負責，以確保政府的透明度。"
+      }]
+    }]
+  },
+  {
+    id: 1025,
+    word: "Accounting",
+    ipa: "/əˈkaʊn.tɪŋ/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "會計；帳務",
+        def_en: "the action or process of keeping financial accounts",
+        sentence: "Rigorous accounting practices are essential for maintaining the financial integrity of any corporation.",
+        sentence_trans: "嚴格的會計實務對於維持任何公司的財務完整性至關重要。"
+      }]
+    }]
+  },
+  {
+    id: 1026,
+    word: "Accumulate",
+    ipa: "/əˈkjuː.mjə.leɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "累積；積聚",
+        def_en: "gather together or acquire an increasing number or quantity of",
+        sentence: "Over the years, scientific evidence has accumulated to support the theory of climate change.",
+        sentence_trans: "多年來，支持氣候變遷理論的科學證據不斷累積。"
+      }]
+    }]
+  },
+  {
+    id: 1027,
+    word: "Accumulation",
+    ipa: "/əˌkjuː.mjəˈleɪ.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "累積物；積聚",
+        def_en: "the acquisition or gradual gathering of something",
+        sentence: "The accumulation of plastic waste in the oceans poses a severe threat to marine life.",
+        sentence_trans: "海洋中塑膠垃圾的累積對海洋生物構成了嚴重威脅。"
+      }]
+    }]
+  },
+  {
+    id: 1028,
+    word: "Accusation",
+    ipa: "/ˌæk.jəˈzeɪ.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "指控；控告",
+        def_en: "a charge or claim that someone has done something illegal or wrong",
+        sentence: "He vehemently denied the accusation of fraud brought against him by his former business partner.",
+        sentence_trans: "他強烈否認其前商業夥伴對他提出的欺詐指控。"
+      }]
+    }]
+  },
+  {
+    id: 1029,
+    word: "Accustom",
+    ipa: "/əˈkʌs.təm/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "使習慣",
+        def_en: "make someone or something accept something as normal or usual",
+        sentence: "It takes time to accustom oneself to the rapid pace of life in a major city.",
+        sentence_trans: "要習慣大城市快節奏的生活是需要時間的。"
+      }]
+    }]
+  },
+  {
+    id: 1030,
+    word: "Acknowledge",
+    ipa: "/əkˈnɒl.ɪdʒ/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "承認；認可",
+        def_en: "accept or admit the existence or truth of",
+        sentence: "The scientific community widely acknowledges the impact of human activities on global warming.",
+        sentence_trans: "科學界廣泛承認人類活動對全球暖化的影響。"
+      }]
+    }]
+  },
+  {
+    id: 1031,
+    word: "Acknowledgement",
+    ipa: "/əkˈnɒl.ɪdʒ.mənt/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "承認；致謝",
+        def_en: "acceptance of the truth or existence of something",
+        sentence: "The award serves as an acknowledgement of her tireless dedication to humanitarian causes.",
+        sentence_trans: "該獎項是對她不懈致力於人道主義事業的認可。"
+      }]
+    }]
+  },
+  {
+    id: 1032,
+    word: "Acne",
+    ipa: "/ˈæk.ni/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "青春痘；痤瘡",
+        def_en: "a skin condition characterized by red pimples",
+        sentence: "While often associated with adolescence, acne can also affect adults due to hormonal imbalances.",
+        sentence_trans: "雖然通常與青春期有關，但由於荷爾蒙失調，青春痘也會影響成年人。"
+      }]
+    }]
+  },
+  {
+    id: 1033,
+    word: "Acquaint",
+    ipa: "/əˈkweɪnt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "使認識；介紹",
+        def_en: "make someone aware of or familiar with",
+        sentence: "New employees are required to attend a workshop to acquaint themselves with the company's safety protocols.",
+        sentence_trans: "新員工必須參加研討會，以熟悉公司的安全規程。"
+      }]
+    }]
+  },
+  {
+    id: 1034,
+    word: "Acquisition",
+    ipa: "/ˌæk.wɪˈzɪʃ.ən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "獲得；收購",
+        def_en: "the learning or developing of a skill, habit, or quality",
+        sentence: "Language acquisition in early childhood occurs much more rapidly than in adulthood.",
+        sentence_trans: "幼兒期的語言習得比成年期快得多。"
+      }]
+    }]
+  },
 
-    <!-- 頂部導航 -->
-    <nav class="w-full max-w-md bg-white shadow-sm border-b border-slate-200 p-3 sticky top-0 z-50 rounded-xl mb-4">
-        <div class="flex justify-between items-center mb-2">
-            <h1 class="text-lg font-black text-slate-700 flex items-center gap-2">
-                <i class="fa-solid fa-graduation-cap text-blue-600"></i>
-                IELTS v39
-            </h1>
-            <div class="text-xs text-slate-400 font-mono flex gap-2">
-                <button onclick="forceReset()" class="hover:text-red-500"><i class="fa-solid fa-rotate-right"></i> 重置</button>
-                <button onclick="openDBModal()" class="hover:text-blue-500"><i class="fa-solid fa-gear"></i> 資料庫</button>
+  // === Column 2 ===
+  {
+    id: 2001,
+    word: "Acre",
+    ipa: "/ˈeɪ.kər/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "英畝",
+        def_en: "a unit of land area",
+        sentence: "The wildfire destroyed thousands of acres of forest before it was finally contained.",
+        sentence_trans: "野火在最終被控制之前摧毀了數千英畝的森林。"
+      }]
+    }]
+  },
+  {
+    id: 2002,
+    word: "Activist",
+    ipa: "/ˈæk.tɪ.vɪst/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "激進分子；行動主義者",
+        def_en: "a person who campaigns to bring about political or social change",
+        sentence: "The environmental activist delivered a passionate speech urging immediate action on climate change.",
+        sentence_trans: "這位環保行動主義者發表了慷慨激昂的演講，敦促對氣候變遷採取立即行動。"
+      }]
+    }]
+  },
+  {
+    id: 2003,
+    word: "Acute",
+    ipa: "/əˈkjuːt/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "劇烈的；敏銳的",
+        def_en: "(of a bad, difficult, or unwelcome situation or phenomenon) present or experienced to a severe or intense degree",
+        sentence: "The region is suffering from an acute shortage of water due to the prolonged drought.",
+        sentence_trans: "由於長期乾旱，該地區正遭受嚴重的水資源短缺。"
+      }]
+    }]
+  },
+  {
+    id: 2004,
+    word: "Adaptation",
+    ipa: "/ˌæd.æpˈteɪ.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "適應；改編",
+        def_en: "the action or process of adapting or being adapted",
+        sentence: "Biological adaptation is a key mechanism that allows species to survive in changing environments.",
+        sentence_trans: "生物適應是允許物種在不斷變化的環境中生存的關鍵機制。"
+      }]
+    }]
+  },
+  {
+    id: 2005,
+    word: "Addiction",
+    ipa: "/əˈdɪk.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "上癮；沉溺",
+        def_en: "the fact or condition of being addicted to a particular substance, thing, or activity",
+        sentence: "Smartphone addiction has become a prevalent issue affecting the social skills of the younger generation.",
+        sentence_trans: "智慧型手機成癮已成為影響年輕一代社交技能的普遍問題。"
+      }]
+    }]
+  },
+  {
+    id: 2006,
+    word: "Administer",
+    ipa: "/ədˈmɪn.ɪ.stər/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "管理；給予",
+        def_en: "manage and be responsible for the running of (a business, organization, etc.)",
+        sentence: "The charity organization was established to administer funds for disaster relief efforts.",
+        sentence_trans: "該慈善組織的成立是為了管理救災工作的資金。"
+      }]
+    }]
+  },
+  {
+    id: 2007,
+    word: "Administration",
+    ipa: "/ədˌmɪn.ɪˈstreɪ.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "行政；管理",
+        def_en: "the process or activity of running a business, organization, etc.",
+        sentence: "Efficient public administration is essential for delivering quality services to citizens.",
+        sentence_trans: "高效的公共行政對於向公民提供優質服務至關重要。"
+      }]
+    }]
+  },
+  {
+    id: 2008,
+    word: "Administrative",
+    ipa: "/ədˈmɪn.ɪ.strə.tɪv/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "行政的；管理的",
+        def_en: "relating to the running of a business, organization, etc.",
+        sentence: "The company is looking to reduce administrative costs by automating routine tasks.",
+        sentence_trans: "該公司正尋求通過自動化日常任務來降低行政成本。"
+      }]
+    }]
+  },
+  {
+    id: 2009,
+    word: "Administrator",
+    ipa: "/ədˈmɪn.ɪ.streɪ.tər/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "行政人員；管理員",
+        def_en: "a person responsible for running a business, organization, etc.",
+        sentence: "The university administrator is responsible for overseeing student admissions and enrollment.",
+        sentence_trans: "大學行政人員負責監督學生的入學和註冊。"
+      }]
+    }]
+  },
+  {
+    id: 2010,
+    word: "Admiral",
+    ipa: "/ˈæd.mɪ.rəl/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "海軍上將",
+        def_en: "a commander of a fleet or naval squadron",
+        sentence: "The admiral commanded the naval fleet during the strategic military exercise.",
+        sentence_trans: "海軍上將在戰略軍事演習期間指揮海軍艦隊。"
+      }]
+    }]
+  },
+  {
+    id: 2011,
+    word: "Adolescence",
+    ipa: "/ˌæd.əˈles.əns/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "青春期",
+        def_en: "the period following the onset of puberty during which a young person develops from a child into an adult",
+        sentence: "Adolescence is a critical period of development characterized by significant physical and emotional changes.",
+        sentence_trans: "青春期是一個關鍵的發展時期，其特徵是顯著的身體和情感變化。"
+      }]
+    }]
+  },
+  {
+    id: 2012,
+    word: "Adolescent",
+    ipa: "/ˌæd.əˈles.ənt/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "青少年",
+        def_en: "(of a young person) in the process of developing from a child into an adult",
+        sentence: "Adolescent behavior often involves risk-taking as they seek to establish their own identity.",
+        sentence_trans: "青少年行為通常涉及冒險，因為他們尋求建立自己的身份。"
+      }]
+    }, {
+      pos: "adj.",
+      items: [{
+        def_zh: "青春期的",
+        def_en: "relating to or characteristic of adolescence",
+        sentence: "The study focused on adolescent mental health issues in urban areas.",
+        sentence_trans: "這項研究集中在城市地區的青春期心理健康問題。"
+      }]
+    }]
+  },
+  {
+    id: 2013,
+    word: "Adorable",
+    ipa: "/əˈdɔː.rə.bəl/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "可愛的",
+        def_en: "inspiring great affection; delightful; charming",
+        sentence: "While the puppy was adorable, raising a pet requires a significant amount of responsibility.",
+        sentence_trans: "雖然這隻小狗很可愛，但養寵物需要大量的責任感。"
+      }]
+    }]
+  },
+  {
+    id: 2014,
+    word: "Adore",
+    ipa: "/əˈdɔːr/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "愛慕；崇拜",
+        def_en: "love and respect (someone) deeply",
+        sentence: "The fans adore the singer not only for her voice but also for her philanthropic work.",
+        sentence_trans: "粉絲們愛慕這位歌手不僅因為她的聲音，還因為她的慈善工作。"
+      }]
+    }]
+  },
+  {
+    id: 2015,
+    word: "Adverse",
+    ipa: "/ˈæd.vɜːs/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "不利的；有害的",
+        def_en: "preventing success or development; harmful; unfavorable",
+        sentence: "The medication was withdrawn from the market due to its adverse side effects on patients.",
+        sentence_trans: "由於對患者產生不利的副作用，該藥物已從市場上撤回。"
+      }]
+    }]
+  },
+  {
+    id: 2016,
+    word: "Advisory",
+    ipa: "/ədˈvaɪ.zər.i/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "顧問的；諮詢的",
+        def_en: "having or consisting in the power to make recommendations but not to enforce them",
+        sentence: "The committee plays a purely advisory role and does not have the power to enact legislation.",
+        sentence_trans: "該委員會僅扮演諮詢角色，沒有制定法律的權力。"
+      }]
+    }]
+  },
+  {
+    id: 2017,
+    word: "Advocate",
+    ipa: "/ˈæd.və.keɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "提倡；主張",
+        def_en: "publicly recommend or support",
+        sentence: "Doctors advocate a balanced diet and regular exercise as the foundation of good health.",
+        sentence_trans: "醫生提倡均衡飲食和規律運動作為良好健康的基礎。"
+      }]
+    }, {
+      pos: "n.",
+      items: [{
+        def_zh: "擁護者；提倡者",
+        def_en: "a person who publicly supports or recommends a particular cause or policy",
+        sentence: "She has been a tireless advocate for environmental protection for over a decade.",
+        sentence_trans: "十多年來，她一直是不知疲倦的環境保護提倡者。"
+      }]
+    }]
+  },
+  {
+    id: 2018,
+    word: "Aesthetic",
+    ipa: "/iːsˈθet.ɪk/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "美學的；審美的",
+        def_en: "concerned with beauty or the appreciation of beauty",
+        sentence: "The building combines functional design with aesthetic appeal, making it a landmark of the city.",
+        sentence_trans: "這棟建築結合了功能性設計與美學吸引力，使其成為城市的地標。"
+      }]
+    }, {
+      pos: "n.",
+      items: [{
+        def_zh: "美學觀點",
+        def_en: "a set of principles concerned with the nature and appreciation of beauty",
+        sentence: "The artist's work is driven by a minimalist aesthetic that emphasizes simplicity and form.",
+        sentence_trans: "這位藝術家的作品受到極簡主義美學的驅動，強調簡單和形式。"
+      }]
+    }]
+  },
+  {
+    id: 2019,
+    word: "Affection",
+    ipa: "/əˈfek.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "喜愛；鍾愛",
+        def_en: "a gentle feeling of fondness or liking",
+        sentence: "She felt a deep affection for the mentor who had guided her throughout her career.",
+        sentence_trans: "她對指導她職業生涯的導師懷有深深的喜愛。"
+      }]
+    }]
+  },
+  {
+    id: 2020,
+    word: "Affectionate",
+    ipa: "/əˈfek.ʃən.ət/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "充滿深情的；溫柔的",
+        def_en: "readily feeling or showing fondness or tenderness",
+        sentence: "He is very affectionate towards his children, always offering hugs and words of encouragement.",
+        sentence_trans: "他對孩子們非常深情，總是給予擁抱和鼓勵的話語。"
+      }]
+    }]
+  },
+  {
+    id: 2021,
+    word: "Affiliate",
+    ipa: "/əˈfɪl.i.eɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "使隸屬；使緊密聯繫",
+        def_en: "officially attach or connect (a subsidiary group or a person) to an organization",
+        sentence: "The local hospital is affiliated with the university medical school for research purposes.",
+        sentence_trans: "這家當地醫院隸屬於大學醫學院，用於研究目的。"
+      }]
+    }, {
+      pos: "n.",
+      items: [{
+        def_zh: "分支機構；成員",
+        def_en: "a person or organization officially attached to a larger body",
+        sentence: "The network has affiliates in over 50 countries worldwide.",
+        sentence_trans: "該網絡在全球 50 多個國家設有分支機構。"
+      }]
+    }]
+  },
+  {
+    id: 2022,
+    word: "Affirm",
+    ipa: "/əˈfɜːm/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "證實；斷言",
+        def_en: "state as a fact; assert strongly and publicly",
+        sentence: "The government affirmed its commitment to reducing carbon emissions by the end of the decade.",
+        sentence_trans: "政府重申了其在十年內減少碳排放的承諾。"
+      }]
+    }]
+  },
+  {
+    id: 2023,
+    word: "Agenda",
+    ipa: "/əˈdʒen.də/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "議程",
+        def_en: "a list of items to be discussed at a formal meeting",
+        sentence: "The main item on the agenda for today's meeting is the proposed budget cut.",
+        sentence_trans: "今天會議議程上的主要項目是擬議的預算削減。"
+      }]
+    }]
+  },
+  {
+    id: 2024,
+    word: "Aggression",
+    ipa: "/əˈɡreʃ.ən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "侵略；攻擊",
+        def_en: "hostile or violent behavior or attitudes toward another",
+        sentence: "The treaty was signed to prevent acts of aggression between the neighboring countries.",
+        sentence_trans: "簽署該條約是為了防止鄰國之間的侵略行為。"
+      }]
+    }]
+  },
+  {
+    id: 2025,
+    word: "Agony",
+    ipa: "/ˈæɡ.ə.ni/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "極度痛苦",
+        def_en: "extreme physical or mental suffering",
+        sentence: "The injured athlete was in visible agony as he was carried off the field.",
+        sentence_trans: "受傷的運動員被抬離賽場時顯然處於極度痛苦之中。"
+      }]
+    }]
+  },
+  {
+    id: 2026,
+    word: "Agricultural",
+    ipa: "/ˌæɡ.rɪˈkʌl.tʃər.əl/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "農業的",
+        def_en: "relating to agriculture",
+        sentence: "Technological advancements have significantly increased agricultural productivity in recent decades.",
+        sentence_trans: "近幾十年來，技術進步顯著提高了農業生產力。"
+      }]
+    }]
+  },
+  {
+    id: 2027,
+    word: "Airtight",
+    ipa: "/ˈeə.taɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "密封的；無懈可擊的",
+        def_en: "not allowing air to escape or pass through",
+        sentence: "The lawyer presented an airtight alibi that proved her client's innocence beyond doubt.",
+        sentence_trans: "律師提出了無懈可擊的不在場證明，無可置疑地證明了她委託人的清白。"
+      }]
+    }]
+  },
+  {
+    id: 2028,
+    word: "Airway",
+    ipa: "/ˈeə.weɪ/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "呼吸道；航線",
+        def_en: "the passage by which air reaches a person's lungs",
+        sentence: "In a medical emergency, keeping the patient's airway clear is the first priority.",
+        sentence_trans: "在醫療緊急情況下，保持患者呼吸道暢通是首要任務。"
+      }]
+    }]
+  },
+  {
+    id: 2029,
+    word: "Aisle",
+    ipa: "/aɪl/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "走道",
+        def_en: "a passage between rows of seats in a building such as a church or theater, an aircraft, or a train",
+        sentence: "Please keep your luggage clear of the aisle to ensure safety during the flight.",
+        sentence_trans: "請勿將行李放在走道上，以確保飛行期間的安全。"
+      }]
+    }]
+  },
+  {
+    id: 2030,
+    word: "Alcoholic",
+    ipa: "/ˌæl.kəˈhɒl.ɪk/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "含酒精的",
+        def_en: "containing alcohol",
+        sentence: "The consumption of alcoholic beverages is prohibited in certain public areas.",
+        sentence_trans: "在某些公共區域禁止飲用含酒精飲料。"
+      }]
+    }, {
+      pos: "n.",
+      items: [{
+        def_zh: "酗酒者",
+        def_en: "a person suffering from alcoholism",
+        sentence: "Support groups can provide vital help for recovering alcoholics.",
+        sentence_trans: "支持團體可以為康復中的酗酒者提供至關重要的幫助。"
+      }]
+    }]
+  },
+  {
+    id: 2031,
+    word: "Algebra",
+    ipa: "/ˈæl.dʒə.brə/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "代數",
+        def_en: "the part of mathematics in which letters and other general symbols are used to represent numbers and quantities",
+        sentence: "Algebra is a fundamental branch of mathematics that is essential for advanced scientific studies.",
+        sentence_trans: "代數是數學的一個基礎分支，對於進階科學研究至關重要。"
+      }]
+    }]
+  },
+  {
+    id: 2032,
+    word: "Alien",
+    ipa: "/ˈeɪ.li.ən/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "外國的；陌生的",
+        def_en: "belonging to a foreign country or nation",
+        sentence: "The concept of absolute censorship is completely alien to a democratic society.",
+        sentence_trans: "絕對審查的概念與民主社會完全格格不入。"
+      }]
+    }, {
+      pos: "n.",
+      items: [{
+        def_zh: "外星人；外國人",
+        def_en: "a hypothetical or fictional being from another world",
+        sentence: "Science fiction movies often depict aliens visiting Earth.",
+        sentence_trans: "科幻電影經常描繪外星人造訪地球。"
+      }]
+    }]
+  },
+  {
+    id: 2033,
+    word: "Alienate",
+    ipa: "/ˈeɪ.li.ə.neɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "使疏遠；離間",
+        def_en: "cause (someone) to feel isolated or estranged",
+        sentence: "The politician's controversial remarks served to alienate many of his moderate supporters.",
+        sentence_trans: "這位政治家的爭議性言論導致他的許多溫和派支持者疏遠。"
+      }]
+    }]
+  },
+  {
+    id: 2034,
+    word: "Align",
+    ipa: "/əˈlaɪn/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "對齊；使一致",
+        def_en: "place or arrange (things) in a straight line",
+        sentence: "The company needs to align its marketing strategy with the changing consumer trends.",
+        sentence_trans: "公司需要將其營銷策略與不斷變化的消費者趨勢保持一致。"
+      }]
+    }]
+  },
+  {
+    id: 2035,
+    word: "Allegation",
+    ipa: "/ˌæl.əˈɡeɪ.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "指控；斷言",
+        def_en: "a claim or assertion that someone has done something illegal or wrong",
+        sentence: "The committee is investigating the allegation of corruption within the department.",
+        sentence_trans: "委員會正在調查部門內部的腐敗指控。"
+      }]
+    }]
+  },
+
+  // === Column 3 ===
+  {
+    id: 3001,
+    word: "Allege",
+    ipa: "/əˈledʒ/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "宣稱；指控",
+        def_en: "claim or assert that someone has done something illegal or wrong",
+        sentence: "The prosecution alleges that the defendant was present at the scene of the crime.",
+        sentence_trans: "檢方宣稱被告在犯罪現場。"
+      }]
+    }]
+  },
+  {
+    id: 3002,
+    word: "Allergic",
+    ipa: "/əˈlɜː.dʒɪk/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "過敏的",
+        def_en: "caused by or relating to an allergy",
+        sentence: "Some children are highly allergic to peanuts, requiring schools to implement strict food policies.",
+        sentence_trans: "有些兒童對花生高度過敏，需要學校實施嚴格的食物政策。"
+      }]
+    }]
+  },
+  {
+    id: 3003,
+    word: "Allergy",
+    ipa: "/ˈæl.ə.dʒi/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "過敏",
+        def_en: "a damaging immune response by the body to a substance",
+        sentence: "Seasonal allergy can significantly impact a person's quality of life during spring.",
+        sentence_trans: "季節性過敏會顯著影響一個人在春季的生活品質。"
+      }]
+    }]
+  },
+  {
+    id: 3004,
+    word: "Alliance",
+    ipa: "/əˈlaɪ.əns/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "聯盟；同盟",
+        def_en: "a union or association formed for mutual benefit",
+        sentence: "The two technology giants formed a strategic alliance to develop renewable energy solutions.",
+        sentence_trans: "這兩家科技巨頭結成戰略聯盟，以開發可再生能源解決方案。"
+      }]
+    }]
+  },
+  {
+    id: 3005,
+    word: "Alligator",
+    ipa: "/ˈæl.ɪ.ɡeɪ.tər/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "短吻鱷",
+        def_en: "a large reptile similar to a crocodile",
+        sentence: "The wetland conservation area is home to a large population of alligators.",
+        sentence_trans: "這片濕地保護區是大量短吻鱷的棲息地。"
+      }]
+    }]
+  },
+  {
+    id: 3006,
+    word: "Allocate",
+    ipa: "/ˈæl.ə.keɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "分配；撥給",
+        def_en: "distribute (resources or duties) for a particular purpose",
+        sentence: "The city council voted to allocate more funds to public education and healthcare.",
+        sentence_trans: "市議會投票決定撥更多資金給公共教育和醫療保健。"
+      }]
+    }]
+  },
+  {
+    id: 3007,
+    word: "Ally",
+    ipa: "/ˈæl.aɪ/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "盟友",
+        def_en: "a state formally cooperating with another for a military or other purpose",
+        sentence: "During times of crisis, a strong ally can provide essential military and economic support.",
+        sentence_trans: "在危機時期，強大的盟友可以提供必要的軍事和經濟支持。"
+      }]
+    }, {
+      pos: "v.",
+      items: [{
+        def_zh: "結盟；聯合",
+        def_en: "combine or unite a resource or commodity with (another) for mutual benefit",
+        sentence: "He allied himself with the progressive wing of the party.",
+        sentence_trans: "他與黨內的進步派結盟。"
+      }]
+    }]
+  },
+  {
+    id: 3008,
+    word: "Alongside",
+    ipa: "/əˌlɒŋˈsaɪd/",
+    priority: 10,
+    meanings: [{
+      pos: "prep.",
+      items: [{
+        def_zh: "在...旁邊；與...一起",
+        def_en: "close to the side of; next to",
+        sentence: "The new highway runs alongside the railway, improving connectivity between the cities.",
+        sentence_trans: "新高速公路沿著鐵路延伸，改善了城市之間的連通性。"
+      }]
+    }, {
+      pos: "adv.",
+      items: [{
+        def_zh: "在旁邊",
+        def_en: "at or to the side of something",
+        sentence: "She ran alongside, cheering him on.",
+        sentence_trans: "她在旁邊跑著，為他加油。"
+      }]
+    }]
+  },
+  {
+    id: 3009,
+    word: "Alter",
+    ipa: "/ˈɒl.tər/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "改變；修改",
+        def_en: "change or cause to change in character or composition",
+        sentence: "Climate change has the potential to permanently alter the geography of coastal regions.",
+        sentence_trans: "氣候變遷有可能永久改變沿海地區的地理。"
+      }]
+    }]
+  },
+  {
+    id: 3010,
+    word: "Alteration",
+    ipa: "/ˌɒl.təˈreɪ.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "改變；修改",
+        def_en: "the action or process of altering or being altered",
+        sentence: "Any alteration to the building's structure requires approval from the local planning authority.",
+        sentence_trans: "對建築結構的任何修改都需要當地規劃部門的批准。"
+      }]
+    }]
+  },
+  {
+    id: 3011,
+    word: "Alternate",
+    ipa: "/ˈɒl.tə.neɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "交替；輪流",
+        def_en: "occur in turn repeatedly",
+        sentence: "Farmers often alternate crops to maintain soil fertility and prevent pest infestation.",
+        sentence_trans: "農民經常輪作農作物以保持土壤肥力並防止蟲害。"
+      }]
+    }, {
+      pos: "adj.",
+      items: [{
+        def_zh: "交替的；間隔的",
+        def_en: "every other; every second",
+        sentence: "We meet on alternate Sundays.",
+        sentence_trans: "我們每隔一個週日見面。"
+      }]
+    }]
+  },
+  {
+    id: 3012,
+    word: "Altitude",
+    ipa: "/ˈæl.tɪ.tjuːd/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "海拔；高度",
+        def_en: "the height of an object or point in relation to sea level or ground level",
+        sentence: "Athletes train at high altitude to improve their oxygen efficiency and endurance.",
+        sentence_trans: "運動員在高海拔地區訓練以提高氧氣利用率和耐力。"
+      }]
+    }]
+  },
+  {
+    id: 3013,
+    word: "Aluminum",
+    ipa: "/əˈluː.mɪ.nəm/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "鋁",
+        def_en: "a light silvery-grey metal",
+        sentence: "Aluminum is widely used in aircraft construction due to its lightweight and durable properties.",
+        sentence_trans: "鋁因其輕便耐用的特性而被廣泛用於飛機製造。"
+      }]
+    }]
+  },
+  {
+    id: 3014,
+    word: "Ambiguity",
+    ipa: "/ˌæm.bɪˈɡjuː.ə.ti/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "模稜兩可；含糊",
+        def_en: "the quality of being open to more than one interpretation",
+        sentence: "Legal documents should be written clearly to avoid any ambiguity that could lead to misinterpretation.",
+        sentence_trans: "法律文件應寫得清楚，以避免任何可能導致誤解的含糊之處。"
+      }]
+    }]
+  },
+  {
+    id: 3015,
+    word: "Ambush",
+    ipa: "/ˈæm.bʊʃ/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "埋伏；伏擊",
+        def_en: "a surprise attack by people lying in wait in a concealed position",
+        sentence: "The soldiers were caught in an ambush while patrolling the dense forest.",
+        sentence_trans: "士兵在茂密的森林巡邏時遭到了伏擊。"
+      }]
+    }, {
+      pos: "v.",
+      items: [{
+        def_zh: "伏擊",
+        def_en: "make a surprise attack on (someone) from a concealed position",
+        sentence: "They were ambushed by enemy forces.",
+        sentence_trans: "他們遭到了敵軍的伏擊。"
+      }]
+    }]
+  },
+  {
+    id: 3016,
+    word: "Amend",
+    ipa: "/əˈmend/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "修改；修訂",
+        def_en: "make minor changes in (a text) in order to make it fairer, more accurate, or more up-to-date",
+        sentence: "The constitution was amended to grant equal voting rights to all citizens.",
+        sentence_trans: "憲法經過修訂，賦予所有公民平等的投票權。"
+      }]
+    }]
+  },
+  {
+    id: 3017,
+    word: "Amid",
+    ipa: "/əˈmɪd/",
+    priority: 10,
+    meanings: [{
+      pos: "prep.",
+      items: [{
+        def_zh: "在...之中",
+        def_en: "surrounded by; in the middle of",
+        sentence: "The resignation came amid growing criticism of the director's management style.",
+        sentence_trans: "辭職發生在對導演管理風格的批評聲浪日益高漲之中。"
+      }]
+    }]
+  },
+  {
+    id: 3018,
+    word: "Ample",
+    ipa: "/ˈæm.pəl/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "充足的；豐富的",
+        def_en: "enough or more than enough; plentiful",
+        sentence: "There is ample evidence to suggest that the policy has had a positive impact on the economy.",
+        sentence_trans: "有充分的證據表明該政策對經濟產生了積極影響。"
+      }]
+    }]
+  },
+  {
+    id: 3019,
+    word: "Amplify",
+    ipa: "/ˈæm.plɪ.faɪ/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "放大；增強",
+        def_en: "increase the volume of (sound), especially using an amplifier",
+        sentence: "Social media platforms can amplify misinformation if content is not properly moderated.",
+        sentence_trans: "如果內容未經適當審核，社交媒體平台可能會放大錯誤訊息。"
+      }]
+    }]
+  },
+  {
+    id: 3020,
+    word: "Analogy",
+    ipa: "/əˈnæl.ə.dʒi/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "類比",
+        def_en: "a comparison between two things, typically for the purpose of explanation or clarification",
+        sentence: "Drawing an analogy between the brain and a computer helps simplify complex cognitive processes.",
+        sentence_trans: "將大腦與電腦進行類比有助於簡化複雜的認知過程。"
+      }]
+    }]
+  },
+  {
+    id: 3021,
+    word: "Analyst",
+    ipa: "/ˈæn.ə.lɪst/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "分析師",
+        def_en: "a person who conducts analysis",
+        sentence: "The financial analyst predicted a downturn in the market based on recent economic indicators.",
+        sentence_trans: "金融分析師根據最近的經濟指標預測市場將出現低迷。"
+      }]
+    }]
+  },
+  {
+    id: 3022,
+    word: "Analytical",
+    ipa: "/ˌæn.əlˈɪt.ɪ.kəl/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "分析的",
+        def_en: "relating to or using analysis or logical reasoning",
+        sentence: "Strong analytical skills are essential for solving complex problems in engineering.",
+        sentence_trans: "強大的分析能力對於解決工程中的複雜問題至關重要。"
+      }]
+    }]
+  },
+  {
+    id: 3023,
+    word: "Anchor",
+    ipa: "/ˈæŋ.kər/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "錨",
+        def_en: "a heavy object attached to a rope or chain and used to moor a vessel to the sea bottom",
+        sentence: "The ship dropped anchor in the harbor to wait for the storm to pass.",
+        sentence_trans: "船在港口拋錨等待風暴過去。"
+      }]
+    }, {
+      pos: "v.",
+      items: [{
+        def_zh: "固定；拋錨",
+        def_en: "moor (a ship) to the sea bottom with an anchor",
+        sentence: "We anchored the boat off the coast.",
+        sentence_trans: "我們將船停泊在海岸附近。"
+      }]
+    }]
+  },
+  {
+    id: 3024,
+    word: "Animate",
+    ipa: "/ˈæn.ɪ.meɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "使有生氣；賦予生命",
+        def_en: "bring to life",
+        sentence: "The speaker's lively gestures helped to animate the audience and keep them engaged.",
+        sentence_trans: "演講者生動的手勢有助於活躍觀眾氣氛並讓他們保持專注。"
+      }]
+    }, {
+      pos: "adj.",
+      items: [{
+        def_zh: "有生命的",
+        def_en: "alive or having life",
+        sentence: "All animate beings need oxygen to survive.",
+        sentence_trans: "所有有生命的生物都需要氧氣才能生存。"
+      }]
+    }]
+  },
+  {
+    id: 3025,
+    word: "Animation",
+    ipa: "/ˌæn.ɪˈmeɪ.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "動畫；生氣",
+        def_en: "the technique of photographing successive drawings or positions of puppets or models to create an illusion of movement",
+        sentence: "Modern computer animation has revolutionized the film industry.",
+        sentence_trans: "現代電腦動畫徹底改變了電影產業。"
+      }]
+    }]
+  },
+  {
+    id: 3026,
+    word: "Annoyance",
+    ipa: "/əˈnɔɪ.əns/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "煩惱；惱火",
+        def_en: "the feeling or state of being annoyed; irritation",
+        sentence: "He couldn't hide his annoyance at being interrupted during the meeting.",
+        sentence_trans: "他無法掩飾自己在會議期間被打斷的惱火。"
+      }]
+    }]
+  },
+  {
+    id: 3027,
+    word: "Anonymous",
+    ipa: "/əˈnɒn.ɪ.məs/",
+    priority: 10,
+    meanings: [{
+      pos: "adj.",
+      items: [{
+        def_zh: "匿名的",
+        def_en: "(of a person) not identified by name",
+        sentence: "The donor wished to remain anonymous, so their name was not listed on the plaque.",
+        sentence_trans: "捐贈者希望保持匿名，因此他們的名字沒有列在牌匾上。"
+      }]
+    }]
+  },
+  {
+    id: 3028,
+    word: "Anthem",
+    ipa: "/ˈæn.θəm/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "國歌；頌歌",
+        def_en: "a rousing or uplifting song identified with a particular group, body, or cause",
+        sentence: "Everyone stood in respect as the national anthem was played before the game.",
+        sentence_trans: "比賽前奏國歌時，所有人都肅立致敬。"
+      }]
+    }]
+  },
+  {
+    id: 3029,
+    word: "Antibiotic",
+    ipa: "/ˌæn.ti.baɪˈɒt.ɪk/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "抗生素",
+        def_en: "a medicine (such as penicillin or its derivatives) that inhibits the growth of or destroys microorganisms",
+        sentence: "The overuse of antibiotics has led to the emergence of drug-resistant bacteria.",
+        sentence_trans: "抗生素的過度使用導致了抗藥性細菌的出現。"
+      }]
+    }]
+  },
+  {
+    id: 3030,
+    word: "Anticipate",
+    ipa: "/ænˈtɪs.ɪ.peɪt/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "預期；期望",
+        def_en: "regard as probable; expect or predict",
+        sentence: "We do not anticipate any major delays in the construction project.",
+        sentence_trans: "我們預期建設項目不會有重大延誤。"
+      }]
+    }]
+  },
+  {
+    id: 3031,
+    word: "Anticipation",
+    ipa: "/ænˌtɪs.ɪˈpeɪ.ʃən/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "預期；期盼",
+        def_en: "the action of anticipating something; expectation or prediction",
+        sentence: "The crowd waited in eager anticipation for the band to take the stage.",
+        sentence_trans: "群眾熱切期盼樂團上台。"
+      }]
+    }]
+  },
+  {
+    id: 3032,
+    word: "Antique",
+    ipa: "/ænˈtiːk/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "古董",
+        def_en: "a collectible object such as a piece of furniture or work of art that has a high value because of its considerable age",
+        sentence: "Collecting antique furniture can be a lucrative investment if one knows the market well.",
+        sentence_trans: "如果非常了解市場，收藏古董家具可能是一項利潤豐厚的投資。"
+      }]
+    }, {
+      pos: "adj.",
+      items: [{
+        def_zh: "古老的；古董的",
+        def_en: "having a high value because of considerable age",
+        sentence: "We visited an antique shop in the old town.",
+        sentence_trans: "我們參觀了老城區的一家古董店。"
+      }]
+    }]
+  },
+  {
+    id: 3033,
+    word: "Antonym",
+    ipa: "/ˈæn.tə.nɪm/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "反義詞",
+        def_en: "a word opposite in meaning to another",
+        sentence: "Learning synonyms and antonyms helps to expand one's vocabulary range.",
+        sentence_trans: "學習同義詞和反義詞有助於擴大詞彙範圍。"
+      }]
+    }]
+  },
+  {
+    id: 3034,
+    word: "Applaud",
+    ipa: "/əˈplɔːd/",
+    priority: 10,
+    meanings: [{
+      pos: "v.",
+      items: [{
+        def_zh: "鼓掌；讚許",
+        def_en: "show approval or praise by clapping",
+        sentence: "The audience stood to applaud the performers after the spectacular show.",
+        sentence_trans: "精彩的表演結束後，觀眾起立為表演者鼓掌。"
+      }]
+    }]
+  },
+  {
+    id: 3035,
+    word: "Applause",
+    ipa: "/əˈplɔːz/",
+    priority: 10,
+    meanings: [{
+      pos: "n.",
+      items: [{
+        def_zh: "掌聲；喝采",
+        def_en: "approval or praise expressed by clapping",
+        sentence: "The thunderous applause lasted for several minutes after the speech concluded.",
+        sentence_trans: "演講結束後，雷鳴般的掌聲持續了幾分鐘。"
+      }]
+    }]
+  }
+];
+
+// =================================================================================
+// 📱 MAIN APP COMPONENT (Mobile Web App / PWA Optimized)
+// =================================================================================
+
+export default function App() {
+  const [words, setWords] = useState([]);
+  const [mode, setMode] = useState('dashboard'); // dashboard, study, quiz
+  const [loading, setLoading] = useState(true);
+
+  // Study Mode State
+  const [currentIndex, setCurrentIndex] = useState(0); 
+  const [activePosTab, setActivePosTab] = useState(0); 
+
+  // Quiz Mode State
+  const [quizQueue, setQuizQueue] = useState([]);
+  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+  const [quizScore, setQuizScore] = useState(0);
+  const [quizFinished, setQuizFinished] = useState(false);
+  const [userInput, setUserInput] = useState("");
+  const [quizStatus, setQuizStatus] = useState("question"); // 'question', 'feedback'
+  const [quizResult, setQuizResult] = useState(null); 
+  const inputRef = useRef(null);
+
+  // Refs for Batch Updates
+  const pendingUpdatesRef = useRef({});
+
+  // 1. Initialize & Load Data (Persistent)
+  useEffect(() => {
+    // 嘗試從 localStorage 讀取進度
+    const savedData = localStorage.getItem('ielts_vocab_progress_v2');
+    
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        // 重新排序：確保載入後優先級高的在前面
+        const sorted = parsedData.sort((a, b) => b.priority - a.priority);
+        setWords(sorted);
+      } catch (e) {
+        console.error("Data load error", e);
+        // 讀取失敗則使用預設庫
+        const sorted = [...VOCAB_LIBRARY].sort((a, b) => b.priority - a.priority);
+        setWords(sorted);
+      }
+    } else {
+      // 第一次使用，載入預設庫
+      const sorted = [...VOCAB_LIBRARY].sort((a, b) => b.priority - a.priority);
+      setWords(sorted);
+    }
+    setLoading(false);
+  }, []);
+
+  // 2. Save Data (Auto-save whenever words change)
+  useEffect(() => {
+    if (words.length > 0) {
+      localStorage.setItem('ielts_vocab_progress_v2', JSON.stringify(words));
+    }
+  }, [words]);
+
+  // Reset Progress Function (Developer Tool)
+  const resetProgress = () => {
+    if (confirm("⚠️ Reset Database?\n\nThis will clear your learning progress and restore the original word list.")) {
+      const resetWords = [...VOCAB_LIBRARY].sort((a, b) => b.priority - a.priority);
+      setWords(resetWords);
+      localStorage.removeItem('ielts_vocab_progress_v2');
+      alert("Database reset to default.");
+    }
+  };
+
+  // Stats
+  const stats = useMemo(() => ({
+    critical: words.filter(w => w.priority >= 8).length,
+    learning: words.filter(w => w.priority > 2 && w.priority < 8).length,
+    mastered: words.filter(w => w.priority <= 2).length,
+    total: words.length
+  }), [words]);
+
+  // TTS Helper (Web API - iOS Safari Compatible)
+  const speak = (text) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.85; // Slightly slower for clarity
+      // iOS Safari sometimes needs explicit voice selection, but default usually works
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Logic: Apply Updates (Batch)
+  const applyPendingUpdates = useCallback(() => {
+    const updatesToApply = { ...pendingUpdatesRef.current };
+    if (Object.keys(updatesToApply).length === 0) return;
+
+    pendingUpdatesRef.current = {}; 
+
+    setWords(prevWords => {
+      const updated = prevWords.map(w => {
+        if (updatesToApply[w.id] !== undefined) {
+          return { ...w, priority: updatesToApply[w.id] };
+        }
+        return w;
+      });
+      // Re-sort: High priority (weak words) first
+      return updated.sort((a, b) => b.priority - a.priority);
+    });
+  }, []);
+
+  const handleExitMode = () => {
+    if (mode === 'quiz') {
+      applyPendingUpdates();
+    }
+    setMode('dashboard');
+  };
+
+  // Logic: Study Navigation
+  const handleNext = () => {
+    if (currentIndex < words.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      setActivePosTab(0); // Reset tab when changing word
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+      setActivePosTab(0); // Reset tab when changing word
+    }
+  };
+
+  // Auto-Speech Effect: Reads word and sentence when currentIndex changes
+  useEffect(() => {
+    if (mode === 'study' && words[currentIndex]) {
+      const currentWord = words[currentIndex];
+      // Speak Word
+      const wordUtterance = new SpeechSynthesisUtterance(currentWord.word);
+      wordUtterance.lang = 'en-US';
+      wordUtterance.rate = 0.9;
+      
+      // Speak Sentence (from active tab)
+      // Safety check: ensure meanings exist
+      if (currentWord.meanings && currentWord.meanings[activePosTab] && currentWord.meanings[activePosTab].items.length > 0) {
+         const sentence = currentWord.meanings[activePosTab].items[0].sentence;
+         const sentenceUtterance = new SpeechSynthesisUtterance(sentence);
+         sentenceUtterance.lang = 'en-US';
+         sentenceUtterance.rate = 0.85; // Slightly slower for sentence
+
+         window.speechSynthesis.cancel(); // Stop any previous speech
+         window.speechSynthesis.speak(wordUtterance);
+         // Small pause handled by queue naturally
+         window.speechSynthesis.speak(sentenceUtterance);
+      } else {
+         window.speechSynthesis.cancel();
+         window.speechSynthesis.speak(wordUtterance);
+      }
+    }
+  }, [currentIndex, mode, activePosTab]); // Also re-read if tab changes? Yes, per "switching" logic usually implies reading content.
+
+  // Helper: Highlight word in sentence
+  const renderHighlightedSentence = (sentence, word) => {
+    if (!sentence || !word) return sentence;
+    // Simple case-insensitive match for the root word
+    const regex = new RegExp(`(${word.slice(0, -1)}\\w*)`, 'gi'); // Match root + suffixes roughly
+    const parts = sentence.split(regex);
+    
+    return (
+      <span>
+        {parts.map((part, i) => 
+          part.toLowerCase().startsWith(word.slice(0, 3).toLowerCase()) ? ( // Heuristic check
+            <span key={i} className="text-red-700 font-bold">{part}</span>
+          ) : (
+            part
+          )
+        )}
+      </span>
+    );
+  };
+
+  // Logic: Quiz
+  const startQuiz = () => {
+    const queue = [...words]
+      .sort(() => Math.random() - 0.5)
+      .sort((a, b) => (Math.random() * b.priority) - (Math.random() * a.priority))
+      .slice(0, 5); // 5 words per quiz session
+    
+    setQuizQueue(queue);
+    setCurrentQuizIndex(0);
+    setQuizScore(0);
+    setQuizFinished(false);
+    setQuizStatus("question");
+    setUserInput("");
+    setQuizResult(null);
+    pendingUpdatesRef.current = {}; 
+    setMode('quiz');
+  };
+
+  const handleSubmitSpelling = (e) => {
+    e?.preventDefault();
+    if (!userInput.trim()) return;
+
+    const qWord = quizQueue[currentQuizIndex];
+    const isCorrect = userInput.trim().toLowerCase() === qWord.word.toLowerCase();
+
+    setQuizResult({ isCorrect, correctWord: qWord.word });
+    setQuizStatus("feedback");
+
+    let newPriority = qWord.priority;
+    if (isCorrect) {
+      setQuizScore(prev => prev + 1);
+      newPriority = Math.max(1, newPriority - 3); 
+      speak("Correct");
+    } else {
+      newPriority = 20; // Force to top
+      speak(qWord.word);
+    }
+
+    pendingUpdatesRef.current[qWord.id] = newPriority;
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuizIndex < quizQueue.length - 1) {
+      setCurrentQuizIndex(prev => prev + 1);
+      setQuizStatus("question");
+      setUserInput("");
+      setQuizResult(null);
+    } else {
+      setQuizFinished(true);
+      applyPendingUpdates();
+    }
+  };
+
+  // Focus input
+  useEffect(() => {
+    if (mode === 'quiz' && quizStatus === 'question' && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [mode, quizStatus, currentQuizIndex]);
+
+  // --- Renderers (Web Layout) ---
+
+  if (loading) {
+    return (
+      <div className="h-[100dvh] bg-slate-50 flex flex-col items-center justify-center">
+        <RotateCw className="animate-spin text-indigo-600 mb-4 w-8 h-8" />
+        <p className="text-slate-500 font-medium">Restoring Progress...</p>
+      </div>
+    );
+  }
+
+  const currentWord = words[currentIndex];
+
+  return (
+    // 使用 100dvh (Dynamic Viewport Height) 確保在 iPhone Safari 上不被網址列遮擋
+    <div className="h-[100dvh] bg-slate-50 font-sans text-slate-800 flex flex-col max-w-md mx-auto border-x border-slate-200 shadow-xl overflow-hidden select-none">
+      
+      {/* Header */}
+      <div className="bg-white px-5 py-4 border-b border-slate-100 flex items-center justify-between sticky top-0 z-10 shrink-0">
+        <button onClick={handleExitMode} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="bg-indigo-600 p-1.5 rounded-lg shadow-sm">
+            <School size={20} className="text-white" />
+          </div>
+          <span className="text-lg font-bold text-slate-900 tracking-tight">IELTS Pro</span>
+        </button>
+        <div className="flex gap-2">
+          <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100">{stats.critical} Weak</span>
+          <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md border border-green-100">{stats.mastered} Good</span>
+        </div>
+      </div>
+
+      {/* DASHBOARD */}
+      {mode === 'dashboard' && (
+        <div className="flex-1 p-5 overflow-y-auto space-y-5 animate-in fade-in zoom-in duration-300 scroll-smooth">
+          <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-indigo-200 text-xs font-bold tracking-widest">DATABASE STATUS</span>
+              <Database size={16} className="text-indigo-300" />
             </div>
-        </div>
-        <div class="flex justify-between text-xs text-slate-500 font-medium mb-1 px-1">
-            <span>庫存: <b id="stat-total">0</b></span>
-            <span>已排除: <b id="stat-mastered" class="text-green-600">0</b></span>
-        </div>
-        <div class="w-full bg-slate-200 rounded-full h-1.5 mb-3 overflow-hidden">
-            <div id="progress-bar" class="bg-green-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-2 mb-2">
-            <button onclick="toggleSavedMode()" id="btn-mode-saved" class="btn-touch flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-600 font-bold text-sm transition-all shadow-sm">
-                <i class="fa-regular fa-star"></i> 收藏 (<span id="stat-saved">0</span>)
+            <div className="flex items-baseline gap-2 mb-4">
+              <span className="text-5xl font-extrabold tracking-tighter">{stats.total}</span>
+              <span className="text-indigo-200 text-sm font-medium">words available</span>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1 bg-white/10 rounded-xl p-3 text-center backdrop-blur-sm border border-white/10">
+                <div className="font-bold text-2xl">{stats.critical}</div>
+                <div className="text-[10px] text-indigo-100 uppercase font-bold tracking-wide">Review</div>
+              </div>
+              <div className="flex-1 bg-white/10 rounded-xl p-3 text-center backdrop-blur-sm border border-white/10">
+                <div className="font-bold text-2xl">{stats.mastered}</div>
+                <div className="text-[10px] text-indigo-100 uppercase font-bold tracking-wide">Mastered</div>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            className="w-full bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between group active:scale-[0.98] transition-all"
+            onClick={() => {
+              setMode('study');
+              setCurrentIndex(0);
+            }}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
+                <BookOpen size={28} />
+              </div>
+              <div className="text-left">
+                <div className="text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">Study Mode</div>
+                <div className="text-sm text-slate-500 font-medium">Sorted by priority</div>
+              </div>
+            </div>
+            <ArrowRight size={20} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
+          </button>
+
+          <button 
+            className="w-full bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between group active:scale-[0.98] transition-all"
+            onClick={startQuiz}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 shadow-inner">
+                <Layers size={28} />
+              </div>
+              <div className="text-left">
+                <div className="text-lg font-bold text-slate-800 group-hover:text-teal-600 transition-colors">Spelling Quiz</div>
+                <div className="text-sm text-slate-500 font-medium">Type to verify</div>
+              </div>
+            </div>
+            <ArrowRight size={20} className="text-slate-300 group-hover:text-teal-500 transition-colors" />
+          </button>
+
+          {/* Reset Button (Hidden in normal use, visible at bottom) */}
+          <div className="pt-10 flex justify-center">
+            <button onClick={resetProgress} className="text-xs text-slate-300 hover:text-red-400 font-medium flex items-center gap-1 transition-colors">
+              <RotateCw size={12} /> Reset Data
             </button>
-            <div class="flex items-center justify-center gap-2 text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded-lg">
-                <i class="fa-solid fa-arrows-rotate"></i> 自動補字機制
-            </div>
+          </div>
         </div>
-        <div class="flex bg-slate-100 p-1 rounded-lg">
-            <button onclick="switchTab('study')" id="tab-study" class="flex-1 py-2 rounded-md text-sm font-bold text-blue-600 bg-white shadow-sm transition-all">學習卡</button>
-            <button onclick="switchTab('spelling')" id="tab-spelling" class="flex-1 py-2 rounded-md text-sm font-bold text-slate-500 hover:text-slate-700 transition-all">拼字測驗</button>
-        </div>
-    </nav>
+      )}
 
-    <!-- 1. 學習卡片模式 -->
-    <div id="view-study" class="w-full max-w-md flex flex-col items-center flex-grow transition-all">
-        <div class="w-full flex justify-between items-center px-2 mb-2 text-sm text-slate-500 font-medium">
-            <span id="study-index">佇列: 1 / 10</span>
-            <span id="study-category" class="bg-slate-200 px-2 py-0.5 rounded text-xs text-slate-600">General</span>
-        </div>
+      {/* STUDY MODE */}
+      {mode === 'study' && currentWord && (
+        <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+          <div className="text-center py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0">
+            Word {currentIndex + 1} of {words.length}
+          </div>
 
-        <div class="flip-container cursor-pointer mb-4" onclick="flipCard()">
-            <div id="flipper" class="flipper shadow-2xl rounded-3xl">
-                <!-- 正面 -->
-                <div class="flip-face face-front bg-white border border-slate-100 p-6 relative">
-                    <div id="overlay-mastered" class="overlay-msg rounded-3xl"><div class="text-green-500 border-4 border-green-500 rounded-full w-24 h-24 flex items-center justify-center icon-anim"><i class="fa-solid fa-check text-5xl"></i></div><div class="text-green-600 font-bold text-lg mt-4">已學會！</div></div>
-                    <div id="overlay-saved" class="overlay-msg rounded-2xl"><div class="text-yellow-400 border-4 border-yellow-400 rounded-full w-24 h-24 flex items-center justify-center icon-anim"><i class="fa-solid fa-star text-5xl"></i></div><div class="text-yellow-600 font-bold text-lg mt-4">已收藏！</div></div>
+          <div className="flex-1 px-4 overflow-y-auto pb-4 scrollbar-hide">
+            <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden relative animate-in slide-in-from-right duration-300">
+              {/* Priority Bar */}
+              <div className={`h-1.5 w-full ${currentWord.priority > 8 ? 'bg-red-500' : currentWord.priority > 4 ? 'bg-amber-400' : 'bg-green-500'}`} />
+              
+              <div className="p-6 border-b border-slate-50 bg-slate-50/50">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-4xl font-extrabold text-slate-900 mb-1 tracking-tight">{currentWord.word}</h2>
+                    <span className="font-serif italic text-slate-500 text-lg">{currentWord.ipa}</span>
+                  </div>
+                  <button 
+                    onClick={() => speak(currentWord.word)}
+                    className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 active:bg-indigo-200 transition-colors shadow-sm"
+                  >
+                    <Volume2 size={24} />
+                  </button>
+                </div>
+              </div>
+
+              {/* POS TABS (Interactive) */}
+              <div className="flex px-6 border-b border-slate-100 bg-white sticky top-0 z-10 pt-2">
+                {currentWord.meanings.map((meaning, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActivePosTab(idx)}
+                    className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all ${
+                      activePosTab === idx
+                        ? 'border-indigo-600 text-indigo-600'
+                        : 'border-transparent text-slate-400 hover:text-slate-600'
+                    }`}
+                  >
+                    {meaning.pos}
+                  </button>
+                ))}
+              </div>
+
+              {/* MEANING CONTENT (Based on Active Tab) */}
+              <div className="p-6 space-y-8 min-h-[200px]">
+                {currentWord.meanings[activePosTab] && currentWord.meanings[activePosTab].items.map((item, i) => (
+                  <div key={i} className="pl-4 border-l-4 border-indigo-100 animate-in fade-in duration-300">
+                    <div className="text-xl font-bold text-slate-800 mb-2">{item.def_zh}</div>
+                    <div className="text-sm text-slate-500 mb-4 leading-relaxed font-medium">{item.def_en}</div>
                     
-                    <div class="absolute top-0 left-0 w-full flex justify-between p-4 z-20">
-                        <div onclick="markAsMastered(event)" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 text-slate-300 hover:bg-green-50 hover:text-green-500 hover:border-green-300 transition-all btn-touch shadow-sm"><i class="fa-solid fa-check"></i></div>
-                        <div onclick="toggleSave(event)" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 shadow-sm btn-touch"><i id="icon-star-front" class="fa-regular fa-star text-xl text-slate-300"></i></div>
+                    <div 
+                      onClick={() => speak(item.sentence)}
+                      className="bg-slate-50 p-4 rounded-xl border border-slate-100 cursor-pointer active:scale-[0.99] active:bg-indigo-50 transition-all group"
+                    >
+                      <p className="text-slate-700 italic text-base mb-2 leading-relaxed font-serif">
+                        "{renderHighlightedSentence(item.sentence, currentWord.word)}"
+                      </p>
+                      <div className="flex justify-between items-end">
+                        <p className="text-xs text-slate-400">{item.sentence_trans}</p>
+                        <Volume2 size={16} className="text-slate-300 group-hover:text-indigo-400" />
+                      </div>
                     </div>
-                    
-                    <div class="flex-grow flex flex-col justify-center items-center w-full mt-4">
-                        <h2 id="card-word" class="text-5xl font-black text-slate-800 mb-3 text-center tracking-tight">Loading</h2>
-                        
-                        <button class="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-full mb-6 btn-touch border border-blue-100 hover:bg-blue-100 transition-colors group" onclick="playFullAudio(event)">
-                            <span id="card-pos" class="text-sm font-bold text-blue-600 bg-white px-2 py-0.5 rounded border border-blue-200">n.</span>
-                            <span id="card-pron" class="text-slate-500 font-mono text-base">/ipa/</span>
-                            <i id="icon-audio" class="fa-solid fa-volume-high text-blue-500 text-lg ml-1 group-active:scale-110 transition-transform"></i>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white px-5 py-4 border-t border-slate-100 flex gap-3 shrink-0 pb-safe">
+            <button 
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              className="flex-1 h-14 rounded-2xl border-2 border-slate-100 font-bold text-slate-600 flex items-center justify-center gap-2 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors active:scale-95"
+            >
+              <ArrowLeft size={20} /> Prev
+            </button>
+            <button 
+              onClick={handleNext}
+              disabled={currentIndex === words.length - 1}
+              className="flex-1 h-14 rounded-2xl bg-indigo-600 font-bold text-white flex items-center justify-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-200 disabled:opacity-50 active:scale-95 transition-all"
+            >
+              Next <ArrowRight size={20} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* QUIZ MODE */}
+      {mode === 'quiz' && (
+        <div className="flex-1 flex flex-col bg-white">
+          {!quizFinished ? (
+            <div className="flex-1 flex flex-col p-5">
+              <div className="flex justify-between items-center mb-6 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span>Question {currentQuizIndex + 1} / {quizQueue.length}</span>
+                <span className="text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Score: {quizScore}</span>
+              </div>
+
+              <div className="flex-1 flex flex-col justify-start mt-4">
+                <div className="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden relative">
+                  <div className="bg-indigo-600 py-3 text-center">
+                    <span className="text-white text-[10px] font-extrabold tracking-[0.2em] uppercase">Spelling Challenge</span>
+                  </div>
+                  
+                  <div className="p-8 text-center">
+                    <div className="mb-8">
+                      <div className="text-3xl font-extrabold text-slate-800 mb-3 leading-tight">
+                        {quizQueue[currentQuizIndex].meanings[0].items[0].def_zh}
+                      </div>
+                      <div className="text-sm text-slate-500 font-medium">
+                        {quizQueue[currentQuizIndex].meanings[0].items[0].def_en}
+                      </div>
+                    </div>
+
+                    {quizStatus === 'question' ? (
+                      <form onSubmit={handleSubmitSpelling} className="flex flex-col items-center gap-6 w-full">
+                        <div className="relative w-full max-w-xs">
+                          <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-2xl select-none">
+                            {quizQueue[currentQuizIndex].word.charAt(0)}
+                          </div>
+                          <input 
+                            ref={inputRef}
+                            type="text" 
+                            value={userInput}
+                            onChange={(e) => setUserInput(e.target.value)}
+                            className="w-full h-16 pl-12 pr-4 text-center text-2xl font-bold border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 bg-slate-50 tracking-wide uppercase text-slate-800 placeholder:text-slate-300"
+                            placeholder="_ _ _ _"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            spellCheck="false"
+                          />
+                        </div>
+                        <button type="submit" className="w-full max-w-xs bg-indigo-600 text-white h-14 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95 flex items-center justify-center gap-2">
+                          Check <Check size={20} />
                         </button>
-
-                        <div class="w-full space-y-3 text-left">
-                            <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-blue-400 shadow-sm">
-                                <p id="card-example-1" class="text-base text-slate-700 font-medium leading-relaxed">System initializing...</p>
-                            </div>
-                            <div id="ex2-container" class="bg-purple-50 p-4 rounded-xl border-l-4 border-purple-400 shadow-sm hidden">
-                                <p id="card-example-2" class="text-sm text-purple-800 leading-relaxed italic">Phrase example.</p>
-                            </div>
+                      </form>
+                    ) : (
+                      <div className="animate-in zoom-in duration-200 w-full flex flex-col items-center">
+                        <div className="mb-8 flex flex-col items-center">
+                          <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 shadow-sm ${quizResult.isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                            {quizResult.isCorrect ? <CheckCircle size={36} /> : <XCircle size={36} />}
+                          </div>
+                          <div className={`text-xl font-bold mb-2 ${quizResult.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                            {quizResult.isCorrect ? "Correct!" : "Incorrect"}
+                          </div>
+                          <div className="text-4xl font-extrabold text-slate-800 tracking-tight">
+                            {quizResult.correctWord}
+                          </div>
                         </div>
-                    </div>
-                    <div class="mt-auto pt-4 text-xs text-slate-400 flex items-center gap-1"><i class="fa-solid fa-hand-pointer"></i> 點擊翻面</div>
+                        
+                        <button onClick={handleNextQuestion} className="w-full max-w-xs bg-slate-900 text-white h-14 rounded-2xl font-bold text-lg hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg">
+                          Next Question <ArrowRightCircle size={20} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-
-                <!-- 背面 -->
-                <div class="flip-face face-back bg-slate-800 text-white p-6 relative border border-slate-700">
-                    <div onclick="toggleSave(event)" class="absolute top-4 right-4 z-20 btn-touch"><i id="icon-star-back" class="fa-regular fa-star text-2xl text-slate-600"></i></div>
-                    <div class="flex-grow flex flex-col justify-center items-center w-full h-full overflow-y-auto card-scroll pt-2">
-                        <div class="text-center mb-6">
-                            <span id="card-pos-back" class="text-xs font-bold bg-yellow-500 text-slate-900 px-1.5 py-0.5 rounded italic align-middle">n.</span>
-                            <h3 id="card-meaning" class="text-4xl font-black text-yellow-400 leading-snug inline-block align-middle">中文</h3>
-                        </div>
-                        <p id="card-en-meaning" class="text-sm text-slate-300 text-center mb-8 px-4 leading-relaxed font-light border-b border-slate-600 pb-6 w-full">English definition.</p>
-                        <div class="w-full grid grid-cols-1 gap-3 text-left text-sm bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <div><span class="text-blue-400 font-bold text-xs uppercase tracking-wide block mb-1">同義 (Syn):</span><span id="card-syn" class="text-slate-200">-</span></div>
-                            <div class="border-t border-white/10 pt-2"><span class="text-green-400 font-bold text-xs uppercase tracking-wide block mb-1">搭配 (Col):</span><span id="card-col" class="text-slate-200">-</span></div>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
-        </div>
+          ) : (
+            <div className="flex-1 flex flex-col justify-center items-center p-8 text-center animate-in zoom-in bg-slate-50">
+              <div className="w-32 h-32 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-500 mb-8 shadow-sm">
+                <Trophy size={64} />
+              </div>
+              <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Quiz Complete!</h2>
+              <p className="text-slate-500 mb-10 text-lg">You scored <span className="text-indigo-600 font-extrabold text-2xl">{quizScore}</span> out of {quizQueue.length}</p>
+              
+              <div className="bg-white border border-slate-200 p-6 rounded-2xl text-sm text-slate-600 mb-10 shadow-sm max-w-xs w-full">
+                <p className="font-bold text-indigo-900 mb-1">Algorithm Update</p>
+                <p>Weak words have been boosted to the top of your queue for immediate review.</p>
+              </div>
 
-        <div class="w-full grid grid-cols-2 gap-3 mb-6">
-            <button onclick="changeCard(-1)" class="btn-touch bg-white text-slate-500 font-bold py-4 rounded-2xl shadow-sm border border-slate-200"><i class="fa-solid fa-arrow-left"></i> 上一個</button>
-            <button onclick="changeCard(1)" class="btn-touch bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-lg border border-slate-700">下一個 <i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-    </div>
-
-    <!-- 2. 拼字模式 -->
-    <div id="view-spelling" class="w-full max-w-md hidden flex-col items-center flex-grow transition-all pt-4">
-        <div class="w-full flex justify-between items-center px-4 mb-4">
-            <h2 class="text-xl font-black text-slate-800">拼字測驗</h2>
-            <div class="text-xs bg-slate-200 px-2 py-1 rounded text-slate-600 font-bold">Score: <span id="spell-score" class="text-blue-600">0</span></div>
-        </div>
-
-        <div class="w-full bg-white p-8 rounded-3xl shadow-xl border border-slate-100 text-center relative mb-6">
-            <div id="spell-penalty-msg" class="hidden absolute top-0 left-0 w-full bg-red-500 text-white text-xs py-1 rounded-t-3xl font-bold">⚠️ 拼錯！已移除「已學會」狀態</div>
-            <div id="spell-content" class="mb-6">
-                <div class="flex justify-center mb-2"><span id="s-pos-hint" class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">n.</span></div>
-                <div class="text-2xl font-black text-slate-800 mb-2 leading-tight" id="spell-mean-zh">中文意思</div>
-                <div class="text-xs text-slate-400 mb-6 italic px-4" id="spell-mean-en">English def</div>
-                <div class="flex justify-center items-center gap-3">
-                    <div class="bg-blue-50 text-blue-600 px-5 py-2 rounded-xl text-3xl font-black border border-blue-100 shadow-inner"><span id="spell-hint-letter">A</span>...</div>
-                    <button onclick="playSimpleAudio(currentSpellWord)" class="w-12 h-12 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center btn-touch shadow-sm"><i class="fa-solid fa-volume-low"></i></button>
-                </div>
+              <button 
+                onClick={handleExitMode}
+                className="w-full max-w-xs bg-slate-900 text-white h-14 rounded-2xl font-bold text-lg hover:bg-slate-800 shadow-xl transition-transform active:scale-95"
+              >
+                Back to Dashboard
+              </button>
             </div>
-            <input type="text" id="spell-input" class="w-full text-center text-3xl font-bold border-b-2 border-slate-200 focus:border-blue-500 outline-none py-2 mb-6 bg-transparent placeholder-slate-200 text-slate-800" placeholder="Type here..." autocomplete="off">
-            <button onclick="checkSpelling()" id="btn-spell-check" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg btn-touch text-lg">送出</button>
-            <div id="spell-feedback" class="h-6 mt-3 text-sm font-bold flex items-center justify-center"></div>
+          )}
         </div>
-
-        <div class="flex gap-2 w-full px-4">
-            <button onclick="startSpelling('active')" id="btn-scope-active" class="flex-1 py-2 text-xs font-bold rounded-lg border border-blue-200 bg-blue-50 text-blue-600">進度</button>
-            <button onclick="startSpelling('saved')" id="btn-scope-saved" class="flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-400">收藏</button>
-            <button onclick="startSpelling('all')" id="btn-scope-all" class="flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-400">全庫</button>
-        </div>
-        <div class="mt-6 w-full text-center"><button onclick="switchTab('study')" class="text-slate-400 text-sm">返回學習卡</button></div>
+      )}
     </div>
-
-    <!-- Modal: DB -->
-    <div id="modal-db" class="modal fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl">
-            <h3 class="font-bold text-lg text-slate-700">資料庫管理</h3>
-            <label class="block w-full cursor-pointer bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-100 transition-colors">
-                <span class="text-slate-600 font-bold text-sm"><i class="fa-solid fa-upload"></i> 匯入擴充 JSON</span>
-                <input type="file" accept=".json" onchange="importFile(this)" class="hidden">
-            </label>
-            <button onclick="resetAll()" class="w-full bg-red-50 text-red-500 font-bold py-3 rounded-xl">重置所有資料</button>
-            <button onclick="closeDBModal()" class="w-full bg-slate-100 text-slate-500 font-bold py-3 rounded-xl">關閉</button>
-        </div>
-    </div>
-
-    <script>
-        // ================= 50 個真實雅思單字 (v39 終極修正版) =================
-        const starterPack = [
-            {id:"1", w:"Substantial", p:"adj.", pr:"/səbˈstæn.ʃəl/", m:"大量的 / 實質的", em:"Of considerable importance, size, or worth.", ex:"There has been a substantial increase in the cost of living.", ex2:"A substantial amount of time was lost.", s:"significant", cl:"substantial amount", c:"General"},
-            {id:"2", w:"Implement", p:"v.", pr:"/ˈɪm.plə.ment/", m:"實施 / 執行", em:"Put (a decision, plan, agreement, etc.) into effect.", ex:"The government must implement strict policies to reduce pollution.", ex2:"We need to implement a new strategy to boost sales.", s:"execute", cl:"implement a plan", c:"General"},
-            {id:"3", w:"Accumulate", p:"v.", pr:"/əˈkjuː.mjə.leɪt/", m:"累積 / 積聚", em:"Gather together or acquire an increasing number or quantity of.", ex:"Dust tends to accumulate if you don't clean regularly.", ex2:"He hopes to accumulate wealth through investments.", s:"amass", cl:"accumulate wealth", c:"General"},
-            {id:"4", w:"Inevitable", p:"adj.", pr:"/ɪˈnev.ə.t̬ə.bəl/", m:"不可避免的", em:"Certain to happen; unavoidable.", ex:"Change is inevitable in the modern business world.", ex2:"War was an inevitable consequence of the conflict.", s:"unavoidable", cl:"inevitable outcome", c:"General"},
-            {id:"5", w:"Ambiguous", p:"adj.", pr:"/æmˈbɪɡ.ju.əs/", m:"模稜兩可的", em:"Open to more than one interpretation; having a double meaning.", ex:"The ending of the movie was ambiguous and open to debate.", ex2:"His reply was ambiguous, so I wasn't sure what he meant.", s:"vague", cl:"ambiguous answer", c:"General"},
-            {id:"6", w:"Coherent", p:"adj.", pr:"/koʊˈhɪr.ənt/", m:"連貫的 / 有條理的", em:"(of an argument, theory, or policy) logical and consistent.", ex:"The student failed to provide a coherent explanation for his absence.", ex2:"They developed a coherent strategy for growth.", s:"logical", cl:"coherent argument", c:"General"},
-            {id:"7", w:"Hypothesis", p:"n.", pr:"/haɪˈpɑː.θə.sɪs/", m:"假設 / 假說", em:"A proposed explanation made on the basis of limited evidence.", ex:"The results of the experiment supported the initial hypothesis.", ex2:"We need to test this hypothesis.", s:"theory", cl:"formulate a hypothesis", c:"Science"},
-            {id:"8", w:"Perspective", p:"n.", pr:"/pɚˈspek.tɪv/", m:"觀點 / 角度", em:"A particular attitude toward or way of regarding something.", ex:"Traveling helps to broaden our perspective on different cultures.", ex2:"From my perspective, the decision was a mistake.", s:"viewpoint", cl:"broaden perspective", c:"General"},
-            {id:"9", w:"Sustainable", p:"adj.", pr:"/səˈsteɪ.nə.bəl/", m:"永續的", em:"Able to be maintained at a certain rate or level.", ex:"We need to find more sustainable sources of energy.", ex2:"Sustainable development is crucial for the future.", s:"viable", cl:"sustainable growth", c:"Environment"},
-            {id:"10", w:"Innovation", p:"n.", pr:"/ˌɪn.əˈveɪ.ʃən/", m:"創新", em:"A new method, idea, product, etc.", ex:"Technological innovation is the key driver of modern economic growth.", ex2:"The company is known for its innovation in design.", s:"novelty", cl:"encourage innovation", c:"Technology"},
-            {id:"11", w:"Biodiversity", p:"n.", pr:"/ˌbaɪ.oʊ.dɪˈvɝː.sə.t̬i/", m:"生物多樣性", em:"The variety of life in the world or in a particular habitat.", ex:"Climate change poses a serious threat to global biodiversity.", ex2:"The island has a rich biodiversity.", s:"variety", cl:"loss of biodiversity", c:"Environment"},
-            {id:"12", w:"Contamination", p:"n.", pr:"/kənˌtæm.əˈneɪ.ʃən/", m:"污染", em:"The action or state of making or being made impure.", ex:"Industrial waste caused severe contamination of the river.", ex2:"Strict measures are needed to avoid food contamination.", s:"pollution", cl:"avoid contamination", c:"Environment"},
-            {id:"13", w:"Artificial", p:"adj.", pr:"/ˌɑːr.t̬əˈfɪʃ.əl/", m:"人造的 / 人工的", em:"Made or produced by human beings rather than occurring naturally.", ex:"This juice contains no artificial colors or preservatives.", ex2:"Artificial intelligence is changing the world.", s:"synthetic", cl:"artificial intelligence", c:"Technology"},
-            {id:"14", w:"Obesity", p:"n.", pr:"/oʊˈbiː.sə.t̬i/", m:"肥胖症", em:"The state or condition of being very fat or overweight.", ex:"Childhood obesity is a growing concern in many countries.", ex2:"A poor diet can lead to obesity.", s:"corpulence", cl:"fight obesity", c:"Health"},
-            {id:"15", w:"Epidemic", p:"n.", pr:"/ˌep.əˈdem.ɪk/", m:"流行病", em:"A widespread occurrence of an infectious disease.", ex:"The government took measures to stop the flu epidemic.", ex2:"Obesity has reached epidemic proportions.", s:"outbreak", cl:"global epidemic", c:"Health"},
-            {id:"16", w:"Curriculum", p:"n.", pr:"/kəˈrɪk.jə.ləm/", m:"課程", em:"The subjects comprising a course of study.", ex:"The school curriculum includes math, science, art, and history.", ex2:"Teachers are discussing changes to the curriculum.", s:"syllabus", cl:"core curriculum", c:"Education"},
-            {id:"17", w:"Literacy", p:"n.", pr:"/ˈlɪt̬.ɚ.ə.si/", m:"識字能力", em:"The ability to read and write.", ex:"Improving literacy is a primary goal of the education system.", ex2:"Computer literacy is essential today.", s:"reading ability", cl:"media literacy", c:"Education"},
-            {id:"18", w:"Revenue", p:"n.", pr:"/ˈrev.ə.nuː/", m:"營收 / 收入", em:"Income, especially when of a company or organization.", ex:"The company's annual revenue exceeded one million dollars.", ex2:"Tax revenue has increased this year.", s:"income", cl:"annual revenue", c:"Business"},
-            {id:"19", w:"Monopoly", p:"n.", pr:"/məˈnɑː.pəl.i/", m:"壟斷", em:"The exclusive possession or control of the supply or trade.", ex:"The company has a virtual monopoly on the market.", ex2:"The government is trying to break up the monopoly.", s:"dominance", cl:"state monopoly", c:"Business"},
-            {id:"20", w:"Incentive", p:"n.", pr:"/ɪnˈsen.t̬ɪv/", m:"誘因 / 獎勵", em:"A thing that motivates.", ex:"Tax incentives were offered to attract new businesses.", ex2:"There is no incentive for them to work harder.", s:"motivation", cl:"financial incentive", c:"Business"},
-            {id:"21", w:"Aesthetic", p:"adj.", pr:"/esˈθet̬.ɪk/", m:"美學的", em:"Concerned with beauty.", ex:"The new building has great aesthetic appeal.", ex2:"The changes were made for aesthetic reasons.", s:"artistic", cl:"aesthetic value", c:"Art"},
-            {id:"22", w:"Heritage", p:"n.", pr:"/ˈher.ɪ.t̬ɪdʒ/", m:"遺產", em:"Property inherited.", ex:"We must preserve our national cultural heritage.", ex2:"The building is part of the city's heritage.", s:"legacy", cl:"cultural heritage", c:"Culture"},
-            {id:"23", w:"Abstract", p:"adj.", pr:"/ˈæb.strækt/", m:"抽象的", em:"Existing in thought.", ex:"Truth and beauty are abstract concepts.", ex2:"His paintings are becoming more abstract.", s:"theoretical", cl:"abstract art", c:"Art"},
-            {id:"24", w:"Contemporary", p:"adj.", pr:"/kənˈtem.pə.rer.i/", m:"當代的", em:"Living at the same time.", ex:"He is a fan of contemporary art and music.", ex2:"Contemporary society.", s:"modern", cl:"contemporary society", c:"Culture"},
-            {id:"25", w:"Infrastructure", p:"n.", pr:"/ˈɪn.frəˌstrʌk.tʃɚ/", m:"基礎建設", em:"Basic structures.", ex:"The country needs to invest more in infrastructure.", ex2:"The war damaged the country's infrastructure.", s:"facilities", cl:"transport infrastructure", c:"Society"},
-            {id:"26", w:"Allocate", p:"v.", pr:"/ˈæl.ə.keɪt/", m:"分配", em:"Distribute.", ex:"We must allocate funds for the new project.", ex2:"Time was allocated for questions.", s:"assign", cl:"allocate resources", c:"Society"},
-            {id:"27", w:"Urbanization", p:"n.", pr:"/ˌɝː.bən.əˈzeɪ.ʃən/", m:"都市化", em:"The process of making an area more urban.", ex:"Rapid urbanization has led to housing shortages.", ex2:"Urbanization is a global trend.", s:"development", cl:"rapid urbanization", c:"Society"},
-            {id:"28", w:"Demographic", p:"adj.", pr:"/ˌdem.əˈɡræf.ɪk/", m:"人口統計的", em:"Relating to population.", ex:"Demographic changes are affecting the economy.", ex2:"The demographic profile of the city is changing.", s:"statistical", cl:"demographic data", c:"Society"},
-            {id:"29", w:"Deteriorate", p:"v.", pr:"/dɪˈtɪr.i.ə.reɪt/", m:"惡化", em:"Become worse.", ex:"His health began to deteriorate rapidly.", ex2:"Relations deteriorated.", s:"worsen", cl:"condition deteriorated", c:"General"},
-            {id:"30", w:"Mitigation", p:"n.", pr:"/ˌmɪt̬.əˈɡeɪ.ʃən/", m:"緩和", em:"Reducing severity.", ex:"Flood mitigation strategies are essential.", ex2:"Mitigation of risks.", s:"reduction", cl:"risk mitigation", c:"General"},
-            {id:"31", w:"Renewable", p:"adj.", pr:"/rɪˈnuː.ə.bəl/", m:"可再生的", em:"Not depleted.", ex:"Solar energy is a renewable resource.", ex2:"We need to switch to renewable energy sources.", s:"sustainable", cl:"renewable energy", c:"Environment"},
-            {id:"32", w:"Profound", p:"adj.", pr:"/prəˈfaʊnd/", m:"深遠的", em:"Very great.", ex:"The war had a profound impact on the country.", ex2:"He has a profound knowledge of the subject.", s:"deep", cl:"profound effect", c:"General"},
-            {id:"33", w:"Discrepancy", p:"n.", pr:"/dɪˈskrep.ən.si/", m:"差異", em:"Lack of compatibility.", ex:"There is a discrepancy between the two reports.", ex2:"We found a slight discrepancy in the accounts.", s:"inconsistency", cl:"huge discrepancy", c:"General"},
-            {id:"34", w:"Simultaneous", p:"adj.", pr:"/ˌsaɪ.məlˈteɪ.ni.əs/", m:"同時的", em:"Occurring at same time.", ex:"There was a simultaneous broadcast on TV and radio.", ex2:"Simultaneous translation was provided.", s:"concurrent", cl:"simultaneous interpretation", c:"General"},
-            {id:"35", w:"Spontaneous", p:"adj.", pr:"/spɑːnˈteɪ.ni.əs/", m:"自發的", em:"Unplanned.", ex:"The audience burst into spontaneous applause.", ex2:"It was a spontaneous decision.", s:"impulsive", cl:"spontaneous reaction", c:"General"},
-            {id:"36", w:"Consumption", p:"n.", pr:"/kənˈsʌmp.ʃən/", m:"消耗", em:"Using up.", ex:"We need to reduce our energy consumption.", ex2:"Alcohol consumption is strictly regulated.", s:"use", cl:"water consumption", c:"Environment"},
-            {id:"37", w:"Exacerbate", p:"v.", pr:"/ɪɡˈzæs.ɚ.beɪt/", m:"加劇", em:"Make worse.", ex:"Stress can exacerbate the illness.", ex2:"Exacerbate the problem.", s:"aggravate", cl:"exacerbate the situation", c:"General"},
-            {id:"38", w:"Pragmatic", p:"adj.", pr:"/præɡˈmæt̬.ɪk/", m:"務實的", em:"Sensible.", ex:"We need a pragmatic approach to solve this issue.", ex2:"He is a pragmatic leader.", s:"practical", cl:"pragmatic solution", c:"General"},
-            {id:"39", w:"Skeptical", p:"adj.", pr:"/ˈskep.tɪ.kəl/", m:"懷疑的", em:"Not convinced.", ex:"Many people are skeptical about the plan.", ex2:"Skeptical attitude.", s:"doubtful", cl:"remain skeptical", c:"General"},
-            {id:"40", w:"Vulnerable", p:"adj.", pr:"/ˈvʌl.nɚ.ə.bəl/", m:"易受傷的", em:"Susceptible to harm.", ex:"Children are vulnerable.", ex2:"Vulnerable position.", s:"helpless", cl:"vulnerable group", c:"Society"},
-            {id:"41", w:"Resilient", p:"adj.", pr:"/rɪˈzɪl.jənt/", m:"有彈性的", em:"Able to recover quickly.", ex:"The economy is resilient.", ex2:"Resilient personality.", s:"tough", cl:"remarkably resilient", c:"Economy"},
-            {id:"42", w:"Detrimental", p:"adj.", pr:"/ˌdet.rəˈmen.t̬əl/", m:"有害的", em:"Causing harm.", ex:"Smoking is detrimental to health.", ex2:"Detrimental effect.", s:"harmful", cl:"detrimental impact", c:"Health"},
-            {id:"43", w:"Beneficial", p:"adj.", pr:"/ˌben.əˈfɪʃ.əl/", m:"有益的", em:"Favorable.", ex:"Regular exercise is beneficial to your health.", ex2:"Mutually beneficial.", s:"advantageous", cl:"beneficial effect", c:"Health"},
-            {id:"44", w:"Indigenous", p:"adj.", pr:"/ɪnˈdɪdʒ.ə.nəs/", m:"本土的", em:"Native.", ex:"The kangaroo is indigenous to Australia.", ex2:"Indigenous culture.", s:"native", cl:"indigenous species", c:"Culture"},
-            {id:"45", w:"Integrity", p:"n.", pr:"/ɪnˈteɡ.rə.t̬i/", m:"正直", em:"Honesty.", ex:"He is a man of the highest integrity.", ex2:"Maintain integrity.", s:"honesty", cl:"personal integrity", c:"General"},
-            {id:"46", w:"Autonomy", p:"n.", pr:"/ɑːˈtɑː.nə.mi/", m:"自治權", em:"Self-government.", ex:"The region has autonomy.", ex2:"Teacher autonomy.", s:"independence", cl:"financial autonomy", c:"Politics"},
-            {id:"47", w:"Legislation", p:"n.", pr:"/ˌledʒ.ɪˈsleɪ.ʃən/", m:"立法", em:"Laws.", ex:"Introduce legislation.", ex2:"Pass legislation.", s:"law", cl:"new legislation", c:"Politics"},
-            {id:"48", w:"Subsequent", p:"adj.", pr:"/ˈsʌb.sɪ.kwənt/", m:"隨後的", em:"Coming after.", ex:"Subsequent events.", ex2:"Subsequent years.", s:"following", cl:"subsequent chapter", c:"General"},
-            {id:"49", w:"Viable", p:"adj.", pr:"/ˈvaɪ.ə.bəl/", m:"可行的", em:"Feasible.", ex:"A viable plan.", ex2:"Economically viable.", s:"feasible", cl:"viable option", c:"General"},
-            {id:"50", w:"Deficiency", p:"n.", pr:"/dɪˈfɪʃ.ən.si/", m:"缺乏", em:"Shortage.", ex:"Vitamin deficiency.", ex2:"Iron deficiency.", s:"shortage", cl:"deficiency in", c:"Health"}
-        ];
-
-        let fullDatabase=[], masterSet=new Set(), savedSet=new Set(), activeList=[], currentIndex=0;
-        let isSavedMode=false, isAnimating=false;
-        let spellList=[], spellIdx=0, spellScore=0, currentSpellWord="", spellScope='active';
-
-        // ================= 初始化 (強制 v39 資料覆寫) =================
-        window.onload = function() {
-            try {
-                // 強制覆寫舊版資料
-                if (!localStorage.getItem('ielts_version_v39_fixed')) {
-                    localStorage.clear();
-                    localStorage.setItem('ielts_version_v39_fixed', 'true');
-                }
-                
-                loadData();
-                
-                if (fullDatabase.length === 0) { 
-                    fullDatabase = [...starterPack];
-                    // 確保 ID 唯一
-                    fullDatabase.forEach(i=>{if(!i.id)i.id=i.w;});
-                    saveData(); 
-                }
-                
-                if (activeList.length === 0) replenishList();
-                renderCard(); updateStats();
-            } catch(e) { if(confirm("Data Error. Reset?")) resetAll(); }
-        };
-
-        function loadData() {
-            const db=localStorage.getItem('ielts_db_v39'), m=localStorage.getItem('ielts_master_v39'), s=localStorage.getItem('ielts_saved_v39'), a=localStorage.getItem('ielts_active_v39');
-            if(db) fullDatabase=JSON.parse(db); if(m) masterSet=new Set(JSON.parse(m)); if(s) savedSet=new Set(JSON.parse(s)); if(a) activeList=JSON.parse(a);
-        }
-        function saveData() {
-            localStorage.setItem('ielts_db_v39',JSON.stringify(fullDatabase)); localStorage.setItem('ielts_master_v39',JSON.stringify([...masterSet]));
-            localStorage.setItem('ielts_saved_v39',JSON.stringify([...savedSet])); localStorage.setItem('ielts_active_v39',JSON.stringify(activeList)); updateStats();
-        }
-        function replenishList() {
-            const candidates = fullDatabase.filter(i=>!masterSet.has(i.id)&&!savedSet.has(i.id)&&!activeList.some(a=>a.id===i.id));
-            while(activeList.length<10 && candidates.length>0) {
-                const r=Math.floor(Math.random()*candidates.length); activeList.push(candidates[r]); candidates.splice(r,1);
-            }
-            saveData(); if(currentIndex>=activeList.length) currentIndex=0;
-        }
-
-        // ================= 卡片操作 =================
-        function markAsMastered(e) {
-            e.stopPropagation(); if(activeList.length===0||isAnimating)return; isAnimating=true;
-            const item=activeList[currentIndex];
-            document.getElementById('overlay-mastered').classList.add('active');
-            setTimeout(()=>{
-                masterSet.add(item.id); if(savedSet.has(item.id)) savedSet.delete(item.id);
-                activeList.splice(currentIndex,1); if(!isSavedMode) replenishList();
-                if(currentIndex>=activeList.length) currentIndex=0;
-                saveData(); renderCard(); updateStats();
-                document.getElementById('overlay-mastered').classList.remove('active'); isAnimating=false;
-            },600);
-        }
-        function toggleSave(e) {
-            e.stopPropagation(); if(activeList.length===0||isAnimating)return;
-            if(isSavedMode) {
-                savedSet.delete(activeList[currentIndex].id); activeList.splice(currentIndex,1);
-                if(currentIndex>=activeList.length) currentIndex=0;
-                saveData(); renderCard(); updateStats(); return;
-            }
-            isAnimating=true; const item=activeList[currentIndex];
-            document.getElementById('overlay-saved').classList.add('active');
-            setTimeout(()=>{
-                savedSet.add(item.id); activeList.splice(currentIndex,1); replenishList();
-                if(currentIndex>=activeList.length) currentIndex=0;
-                saveData(); renderCard(); updateStats();
-                document.getElementById('overlay-saved').classList.remove('active'); isAnimating=false;
-            },600);
-        }
-        function toggleSavedMode(){
-            isSavedMode=!isSavedMode; currentIndex=0;
-            const btn=document.getElementById('btn-mode-saved');
-            if(isSavedMode){
-                const s=fullDatabase.filter(i=>savedSet.has(i.id)); if(s.length===0){alert("無收藏");isSavedMode=false;return;}
-                activeList=s; btn.classList.add('bg-blue-100','text-blue-700','border-blue-400');
-            }else{
-                const stored=JSON.parse(localStorage.getItem('ielts_active_v39')||"[]");
-                activeList=stored.filter(i=>!masterSet.has(i.id)&&!savedSet.has(i.id)); replenishList();
-                btn.classList.remove('bg-blue-100','text-blue-700','border-blue-400');
-            }
-            renderCard(); updateStats();
-        }
-        
-        function renderCard() {
-            document.getElementById('flipper').classList.remove('flipped');
-            if(activeList.length===0){document.getElementById('card-word').textContent=isSavedMode?"無收藏":"通關!";document.getElementById('card-meaning').textContent="請匯入";return;}
-            const d=activeList[currentIndex];
-            if(!d){replenishList();return;}
-            
-            document.getElementById('card-word').textContent=d.w;
-            document.getElementById('card-pos').textContent=d.p;
-            document.getElementById('card-pron').textContent=d.pr;
-            document.getElementById('card-pos-back').textContent=d.p;
-            document.getElementById('card-meaning').textContent=d.m;
-            document.getElementById('card-en-meaning').textContent=d.em;
-            
-            // 例句顯示 (v39 確保顯示)
-            document.getElementById('card-example-1').textContent = `"${d.ex}"`;
-            const ex2 = document.getElementById('ex2-container');
-            if(d.ex2) { ex2.classList.remove('hidden'); document.getElementById('card-example-2').textContent = `"${d.ex2}"`; }
-            else { ex2.classList.add('hidden'); }
-
-            document.getElementById('study-index').textContent=`佇列: ${currentIndex+1}/${activeList.length}`;
-            document.getElementById('study-category').textContent=d.c;
-            document.getElementById('card-syn').textContent = d.s || "-";
-            document.getElementById('card-col').textContent = d.cl || "-";
-
-            const isSaved=savedSet.has(d.id);
-            document.getElementById('icon-star-front').className=isSaved?'fa-solid fa-star text-xl text-yellow-400':'fa-regular fa-star text-xl text-slate-300';
-            document.getElementById('icon-star-back').className=isSaved?'fa-solid fa-star text-3xl text-yellow-400':'fa-regular fa-star text-3xl text-slate-600';
-        }
-        function flipCard(){document.getElementById('flipper').classList.toggle('flipped')}
-        function changeCard(d){if(activeList.length===0)return;currentIndex=(currentIndex+d+activeList.length)%activeList.length;renderCard();}
-
-        // Audio
-        function playFullAudio(e) {
-            if(e) e.stopPropagation();
-            if(activeList.length===0) return;
-            const d = activeList[currentIndex];
-            const icon = document.getElementById('icon-audio');
-            if('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                icon.classList.add('playing');
-                // 讀單字
-                const u1 = new SpeechSynthesisUtterance(d.w); u1.lang='en-US'; u1.rate=0.8;
-                // 讀主例句
-                const u2 = new SpeechSynthesisUtterance(d.ex); u2.lang='en-US'; u2.rate=0.9;
-                
-                u1.onend = () => window.speechSynthesis.speak(u2);
-                u2.onend = () => icon.classList.remove('playing');
-                
-                window.speechSynthesis.speak(u1);
-            }
-        }
-        function playSimpleAudio(word) {
-             if('speechSynthesis' in window) {
-                 const u = new SpeechSynthesisUtterance(word);
-                 u.lang = 'en-US';
-                 window.speechSynthesis.speak(u);
-             }
-        }
-
-        // Spell
-        function switchTab(t){
-            document.getElementById('view-study').classList.add('hidden');
-            document.getElementById('view-spelling').classList.add('hidden');
-            document.getElementById(`view-${t}`).classList.remove('hidden');
-            document.getElementById('tab-study').className = t==='study' ? "flex-1 py-2 rounded-md text-sm font-bold text-blue-600 bg-white shadow-sm" : "flex-1 py-2 rounded-md text-sm font-bold text-slate-500";
-            document.getElementById('tab-spelling').className = t==='spelling' ? "flex-1 py-2 rounded-md text-sm font-bold text-blue-600 bg-white shadow-sm" : "flex-1 py-2 rounded-md text-sm font-bold text-slate-500";
-            if(t==='spelling') startSpelling(spellScope);
-        }
-        function startSpelling(scope){
-            spellScope = scope;
-            ['active','saved','all'].forEach(k=>{document.getElementById(`btn-scope-${k}`).className=`flex-1 py-2 text-xs font-bold rounded-lg ${k===scope?'border border-blue-200 bg-blue-50 text-blue-600':'border border-slate-200 bg-white text-slate-400'}`});
-            if(scope==='active') spellList=[...activeList]; else if(scope==='saved') spellList=fullDatabase.filter(i=>savedSet.has(i.id)); else spellList=[...fullDatabase];
-            if(spellList.length<1){alert("無單字");return;}
-            spellList.sort(()=>0.5-Math.random()); spellList=spellList.slice(0,10);
-            spellIdx=0; spellScore=0; renderSpell();
-        }
-        function renderSpell(){
-            if(spellIdx>=spellList.length){alert(`分數: ${spellScore}`);switchTab('study');return;}
-            const d=spellList[spellIdx]; currentSpellWord=d.w;
-            document.getElementById('s-pos-hint').textContent=d.p;
-            document.getElementById('spell-mean-zh').textContent=d.m;
-            document.getElementById('spell-mean-en').textContent=d.em;
-            document.getElementById('spell-hint-letter').textContent=d.w.charAt(0).toUpperCase();
-            document.getElementById('spell-input').value=''; document.getElementById('spell-input').disabled=false; document.getElementById('spell-input').focus();
-            document.getElementById('spell-input').className="w-full text-center text-3xl font-bold border-b-2 border-slate-200 focus:border-blue-500 outline-none py-2 mb-6 bg-transparent placeholder-slate-200 text-slate-800";
-            document.getElementById('spell-feedback').textContent='';
-        }
-        function checkSpelling(){
-            const inp=document.getElementById('spell-input'); const val=inp.value.trim().toLowerCase(); if(!val)return; inp.disabled=true;
-            if(val===currentSpellWord.toLowerCase()){
-                spellScore+=10; inp.classList.add('spell-correct'); document.getElementById('spell-feedback').innerHTML='<span class="text-green-600">Correct!</span>';
-            }else{
-                inp.classList.add('spell-wrong'); document.getElementById('spell-feedback').innerHTML=`<span class="text-red-500">Ans: ${currentSpellWord}</span>`;
-                if(spellScope==='all'&&masterSet.has(currentSpellWord)){
-                    masterSet.delete(currentSpellWord); saveData(); 
-                    document.getElementById('spell-penalty-msg').classList.remove('hidden');
-                }
-            }
-            setTimeout(()=>{spellIdx++;renderSpell()},1500);
-        }
-        document.getElementById('spell-input').addEventListener('keypress',e=>{if(e.key==='Enter')checkSpelling()});
-
-        // Common
-        function updateStats(){document.getElementById('stat-total').textContent=fullDatabase.length;document.getElementById('stat-mastered').textContent=masterSet.size;document.getElementById('stat-saved').textContent=savedSet.size;}
-        function openDBModal(){document.getElementById('modal-db').classList.remove('hidden')}
-        function closeDBModal(){document.getElementById('modal-db').classList.add('hidden')}
-        function forceReset(){if(confirm("強制重置資料庫？")){localStorage.clear();location.reload();}}
-        function resetAll(){if(confirm("重置?")){localStorage.clear();location.reload();}}
-        function importFile(input){
-            const f=input.files[0];if(!f)return;
-            const r=new FileReader();
-            r.onload=e=>{try{
-                const d=JSON.parse(e.target.result); if(!Array.isArray(d))throw 0;
-                let add=0; const s=new Set(fullDatabase.map(i=>i.w));
-                d.forEach(i=>{if(!s.has(i.w)){i.id=i.w;fullDatabase.push(i);add++}});
-                saveData();alert(`匯入 ${add} 字`);closeDBModal();if(activeList.length===0)replenishList();renderCard();updateStats();
-            }catch{alert("格式錯誤")}};
-            r.readAsText(f);
-        }
-    </script>
-</body>
-</html>
+  );
+}
