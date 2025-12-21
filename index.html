@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>IELTS 雅思單字 (v39 內容修復)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Roboto', 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        .flip-container { perspective: 1000px; width: 100%; min-height: 520px; position: relative; }
+        .flipper { display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; width: 100%; height: 100%; }
+        .flip-face { grid-area: 1 / 1 / 2 / 2; backface-visibility: hidden; -webkit-backface-visibility: hidden; width: 100%; height: 100%; border-radius: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+        .face-front { z-index: 2; transform: rotateY(0deg); }
+        .face-back { transform: rotateY(180deg); z-index: 1; }
+        .flipped { transform: rotateY(180deg); }
+
+        .playing { color: #22c55e !important; transform: scale(1.1); }
+        .btn-touch:active { transform: scale(0.96); opacity: 0.9; }
+        
+        .overlay-msg { position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; background: rgba(255,255,255,0.95); }
+        .overlay-msg.active { opacity: 1; }
+        .icon-anim { animation: icon-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes icon-pop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        
+        .modal { background-color: rgba(0,0,0,0.6); }
+        .card-scroll::-webkit-scrollbar { width: 4px; }
+        .card-scroll::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 4px; }
+        .spell-correct { border-color: #22c55e !important; background-color: #f0fdf4; color: #16a34a; }
+        .spell-wrong { border-color: #ef4444 !important; background-color: #fef2f2; color: #dc2626; }
+    </style>
+</head>
+<body class="bg-slate-100 flex flex-col items-center min-h-screen text-slate-800 p-4 pb-20">
+
+    <!-- 頂部導航 -->
+    <nav class="w-full max-w-md bg-white shadow-sm border-b border-slate-200 p-3 sticky top-0 z-50 rounded-xl mb-4">
+        <div class="flex justify-between items-center mb-2">
+            <h1 class="text-lg font-black text-slate-700 flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-blue-600"></i>
+                IELTS v39
+            </h1>
+            <div class="text-xs text-slate-400 font-mono flex gap-2">
+                <button onclick="forceReset()" class="hover:text-red-500"><i class="fa-solid fa-rotate-right"></i> 重置</button>
+                <button onclick="openDBModal()" class="hover:text-blue-500"><i class="fa-solid fa-gear"></i> 資料庫</button>
+            </div>
+        </div>
+        <div class="flex justify-between text-xs text-slate-500 font-medium mb-1 px-1">
+            <span>庫存: <b id="stat-total">0</b></span>
+            <span>已排除: <b id="stat-mastered" class="text-green-600">0</b></span>
+        </div>
+        <div class="w-full bg-slate-200 rounded-full h-1.5 mb-3 overflow-hidden">
+            <div id="progress-bar" class="bg-green-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mb-2">
+            <button onclick="toggleSavedMode()" id="btn-mode-saved" class="btn-touch flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-600 font-bold text-sm transition-all shadow-sm">
+                <i class="fa-regular fa-star"></i> 收藏 (<span id="stat-saved">0</span>)
+            </button>
+            <div class="flex items-center justify-center gap-2 text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded-lg">
+                <i class="fa-solid fa-arrows-rotate"></i> 自動補字機制
+            </div>
+        </div>
+        <div class="flex bg-slate-100 p-1 rounded-lg">
+            <button onclick="switchTab('study')" id="tab-study" class="flex-1 py-2 rounded-md text-sm font-bold text-blue-600 bg-white shadow-sm transition-all">學習卡</button>
+            <button onclick="switchTab('spelling')" id="tab-spelling" class="flex-1 py-2 rounded-md text-sm font-bold text-slate-500 hover:text-slate-700 transition-all">拼字測驗</button>
+        </div>
+    </nav>
+
+    <!-- 1. 學習卡片模式 -->
+    <div id="view-study" class="w-full max-w-md flex flex-col items-center flex-grow transition-all">
+        <div class="w-full flex justify-between items-center px-2 mb-2 text-sm text-slate-500 font-medium">
+            <span id="study-index">佇列: 1 / 10</span>
+            <span id="study-category" class="bg-slate-200 px-2 py-0.5 rounded text-xs text-slate-600">General</span>
+        </div>
+
+        <div class="flip-container cursor-pointer mb-4" onclick="flipCard()">
+            <div id="flipper" class="flipper shadow-2xl rounded-3xl">
+                <!-- 正面 -->
+                <div class="flip-face face-front bg-white border border-slate-100 p-6 relative">
+                    <div id="overlay-mastered" class="overlay-msg rounded-3xl"><div class="text-green-500 border-4 border-green-500 rounded-full w-24 h-24 flex items-center justify-center icon-anim"><i class="fa-solid fa-check text-5xl"></i></div><div class="text-green-600 font-bold text-lg mt-4">已學會！</div></div>
+                    <div id="overlay-saved" class="overlay-msg rounded-2xl"><div class="text-yellow-400 border-4 border-yellow-400 rounded-full w-24 h-24 flex items-center justify-center icon-anim"><i class="fa-solid fa-star text-5xl"></i></div><div class="text-yellow-600 font-bold text-lg mt-4">已收藏！</div></div>
+                    
+                    <div class="absolute top-0 left-0 w-full flex justify-between p-4 z-20">
+                        <div onclick="markAsMastered(event)" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 text-slate-300 hover:bg-green-50 hover:text-green-500 hover:border-green-300 transition-all btn-touch shadow-sm"><i class="fa-solid fa-check"></i></div>
+                        <div onclick="toggleSave(event)" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 shadow-sm btn-touch"><i id="icon-star-front" class="fa-regular fa-star text-xl text-slate-300"></i></div>
+                    </div>
+                    
+                    <div class="flex-grow flex flex-col justify-center items-center w-full mt-4">
+                        <h2 id="card-word" class="text-5xl font-black text-slate-800 mb-3 text-center tracking-tight">Loading</h2>
+                        
+                        <button class="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-full mb-6 btn-touch border border-blue-100 hover:bg-blue-100 transition-colors group" onclick="playFullAudio(event)">
+                            <span id="card-pos" class="text-sm font-bold text-blue-600 bg-white px-2 py-0.5 rounded border border-blue-200">n.</span>
+                            <span id="card-pron" class="text-slate-500 font-mono text-base">/ipa/</span>
+                            <i id="icon-audio" class="fa-solid fa-volume-high text-blue-500 text-lg ml-1 group-active:scale-110 transition-transform"></i>
+                        </button>
+
+                        <div class="w-full space-y-3 text-left">
+                            <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-blue-400 shadow-sm">
+                                <p id="card-example-1" class="text-base text-slate-700 font-medium leading-relaxed">System initializing...</p>
+                            </div>
+                            <div id="ex2-container" class="bg-purple-50 p-4 rounded-xl border-l-4 border-purple-400 shadow-sm hidden">
+                                <p id="card-example-2" class="text-sm text-purple-800 leading-relaxed italic">Phrase example.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-auto pt-4 text-xs text-slate-400 flex items-center gap-1"><i class="fa-solid fa-hand-pointer"></i> 點擊翻面</div>
+                </div>
+
+                <!-- 背面 -->
+                <div class="flip-face face-back bg-slate-800 text-white p-6 relative border border-slate-700">
+                    <div onclick="toggleSave(event)" class="absolute top-4 right-4 z-20 btn-touch"><i id="icon-star-back" class="fa-regular fa-star text-2xl text-slate-600"></i></div>
+                    <div class="flex-grow flex flex-col justify-center items-center w-full h-full overflow-y-auto card-scroll pt-2">
+                        <div class="text-center mb-6">
+                            <span id="card-pos-back" class="text-xs font-bold bg-yellow-500 text-slate-900 px-1.5 py-0.5 rounded italic align-middle">n.</span>
+                            <h3 id="card-meaning" class="text-4xl font-black text-yellow-400 leading-snug inline-block align-middle">中文</h3>
+                        </div>
+                        <p id="card-en-meaning" class="text-sm text-slate-300 text-center mb-8 px-4 leading-relaxed font-light border-b border-slate-600 pb-6 w-full">English definition.</p>
+                        <div class="w-full grid grid-cols-1 gap-3 text-left text-sm bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <div><span class="text-blue-400 font-bold text-xs uppercase tracking-wide block mb-1">同義 (Syn):</span><span id="card-syn" class="text-slate-200">-</span></div>
+                            <div class="border-t border-white/10 pt-2"><span class="text-green-400 font-bold text-xs uppercase tracking-wide block mb-1">搭配 (Col):</span><span id="card-col" class="text-slate-200">-</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full grid grid-cols-2 gap-3 mb-6">
+            <button onclick="changeCard(-1)" class="btn-touch bg-white text-slate-500 font-bold py-4 rounded-2xl shadow-sm border border-slate-200"><i class="fa-solid fa-arrow-left"></i> 上一個</button>
+            <button onclick="changeCard(1)" class="btn-touch bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-lg border border-slate-700">下一個 <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <!-- 2. 拼字模式 -->
+    <div id="view-spelling" class="w-full max-w-md hidden flex-col items-center flex-grow transition-all pt-4">
+        <div class="w-full flex justify-between items-center px-4 mb-4">
+            <h2 class="text-xl font-black text-slate-800">拼字測驗</h2>
+            <div class="text-xs bg-slate-200 px-2 py-1 rounded text-slate-600 font-bold">Score: <span id="spell-score" class="text-blue-600">0</span></div>
+        </div>
+
+        <div class="w-full bg-white p-8 rounded-3xl shadow-xl border border-slate-100 text-center relative mb-6">
+            <div id="spell-penalty-msg" class="hidden absolute top-0 left-0 w-full bg-red-500 text-white text-xs py-1 rounded-t-3xl font-bold">⚠️ 拼錯！已移除「已學會」狀態</div>
+            <div id="spell-content" class="mb-6">
+                <div class="flex justify-center mb-2"><span id="s-pos-hint" class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">n.</span></div>
+                <div class="text-2xl font-black text-slate-800 mb-2 leading-tight" id="spell-mean-zh">中文意思</div>
+                <div class="text-xs text-slate-400 mb-6 italic px-4" id="spell-mean-en">English def</div>
+                <div class="flex justify-center items-center gap-3">
+                    <div class="bg-blue-50 text-blue-600 px-5 py-2 rounded-xl text-3xl font-black border border-blue-100 shadow-inner"><span id="spell-hint-letter">A</span>...</div>
+                    <button onclick="playSimpleAudio(currentSpellWord)" class="w-12 h-12 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center btn-touch shadow-sm"><i class="fa-solid fa-volume-low"></i></button>
+                </div>
+            </div>
+            <input type="text" id="spell-input" class="w-full text-center text-3xl font-bold border-b-2 border-slate-200 focus:border-blue-500 outline-none py-2 mb-6 bg-transparent placeholder-slate-200 text-slate-800" placeholder="Type here..." autocomplete="off">
+            <button onclick="checkSpelling()" id="btn-spell-check" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg btn-touch text-lg">送出</button>
+            <div id="spell-feedback" class="h-6 mt-3 text-sm font-bold flex items-center justify-center"></div>
+        </div>
+
+        <div class="flex gap-2 w-full px-4">
+            <button onclick="startSpelling('active')" id="btn-scope-active" class="flex-1 py-2 text-xs font-bold rounded-lg border border-blue-200 bg-blue-50 text-blue-600">進度</button>
+            <button onclick="startSpelling('saved')" id="btn-scope-saved" class="flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-400">收藏</button>
+            <button onclick="startSpelling('all')" id="btn-scope-all" class="flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-400">全庫</button>
+        </div>
+        <div class="mt-6 w-full text-center"><button onclick="switchTab('study')" class="text-slate-400 text-sm">返回學習卡</button></div>
+    </div>
+
+    <!-- Modal: DB -->
+    <div id="modal-db" class="modal fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-lg text-slate-700">資料庫管理</h3>
+            <label class="block w-full cursor-pointer bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-100 transition-colors">
+                <span class="text-slate-600 font-bold text-sm"><i class="fa-solid fa-upload"></i> 匯入擴充 JSON</span>
+                <input type="file" accept=".json" onchange="importFile(this)" class="hidden">
+            </label>
+            <button onclick="resetAll()" class="w-full bg-red-50 text-red-500 font-bold py-3 rounded-xl">重置所有資料</button>
+            <button onclick="closeDBModal()" class="w-full bg-slate-100 text-slate-500 font-bold py-3 rounded-xl">關閉</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 50 個真實雅思單字 (v39 終極修正版) =================
+        const starterPack = [
+            {id:"1", w:"Substantial", p:"adj.", pr:"/səbˈstæn.ʃəl/", m:"大量的 / 實質的", em:"Of considerable importance, size, or worth.", ex:"There has been a substantial increase in the cost of living.", ex2:"A substantial amount of time was lost.", s:"significant", cl:"substantial amount", c:"General"},
+            {id:"2", w:"Implement", p:"v.", pr:"/ˈɪm.plə.ment/", m:"實施 / 執行", em:"Put (a decision, plan, agreement, etc.) into effect.", ex:"The government must implement strict policies to reduce pollution.", ex2:"We need to implement a new strategy to boost sales.", s:"execute", cl:"implement a plan", c:"General"},
+            {id:"3", w:"Accumulate", p:"v.", pr:"/əˈkjuː.mjə.leɪt/", m:"累積 / 積聚", em:"Gather together or acquire an increasing number or quantity of.", ex:"Dust tends to accumulate if you don't clean regularly.", ex2:"He hopes to accumulate wealth through investments.", s:"amass", cl:"accumulate wealth", c:"General"},
+            {id:"4", w:"Inevitable", p:"adj.", pr:"/ɪˈnev.ə.t̬ə.bəl/", m:"不可避免的", em:"Certain to happen; unavoidable.", ex:"Change is inevitable in the modern business world.", ex2:"War was an inevitable consequence of the conflict.", s:"unavoidable", cl:"inevitable outcome", c:"General"},
+            {id:"5", w:"Ambiguous", p:"adj.", pr:"/æmˈbɪɡ.ju.əs/", m:"模稜兩可的", em:"Open to more than one interpretation; having a double meaning.", ex:"The ending of the movie was ambiguous and open to debate.", ex2:"His reply was ambiguous, so I wasn't sure what he meant.", s:"vague", cl:"ambiguous answer", c:"General"},
+            {id:"6", w:"Coherent", p:"adj.", pr:"/koʊˈhɪr.ənt/", m:"連貫的 / 有條理的", em:"(of an argument, theory, or policy) logical and consistent.", ex:"The student failed to provide a coherent explanation for his absence.", ex2:"They developed a coherent strategy for growth.", s:"logical", cl:"coherent argument", c:"General"},
+            {id:"7", w:"Hypothesis", p:"n.", pr:"/haɪˈpɑː.θə.sɪs/", m:"假設 / 假說", em:"A proposed explanation made on the basis of limited evidence.", ex:"The results of the experiment supported the initial hypothesis.", ex2:"We need to test this hypothesis.", s:"theory", cl:"formulate a hypothesis", c:"Science"},
+            {id:"8", w:"Perspective", p:"n.", pr:"/pɚˈspek.tɪv/", m:"觀點 / 角度", em:"A particular attitude toward or way of regarding something.", ex:"Traveling helps to broaden our perspective on different cultures.", ex2:"From my perspective, the decision was a mistake.", s:"viewpoint", cl:"broaden perspective", c:"General"},
+            {id:"9", w:"Sustainable", p:"adj.", pr:"/səˈsteɪ.nə.bəl/", m:"永續的", em:"Able to be maintained at a certain rate or level.", ex:"We need to find more sustainable sources of energy.", ex2:"Sustainable development is crucial for the future.", s:"viable", cl:"sustainable growth", c:"Environment"},
+            {id:"10", w:"Innovation", p:"n.", pr:"/ˌɪn.əˈveɪ.ʃən/", m:"創新", em:"A new method, idea, product, etc.", ex:"Technological innovation is the key driver of modern economic growth.", ex2:"The company is known for its innovation in design.", s:"novelty", cl:"encourage innovation", c:"Technology"},
+            {id:"11", w:"Biodiversity", p:"n.", pr:"/ˌbaɪ.oʊ.dɪˈvɝː.sə.t̬i/", m:"生物多樣性", em:"The variety of life in the world or in a particular habitat.", ex:"Climate change poses a serious threat to global biodiversity.", ex2:"The island has a rich biodiversity.", s:"variety", cl:"loss of biodiversity", c:"Environment"},
+            {id:"12", w:"Contamination", p:"n.", pr:"/kənˌtæm.əˈneɪ.ʃən/", m:"污染", em:"The action or state of making or being made impure.", ex:"Industrial waste caused severe contamination of the river.", ex2:"Strict measures are needed to avoid food contamination.", s:"pollution", cl:"avoid contamination", c:"Environment"},
+            {id:"13", w:"Artificial", p:"adj.", pr:"/ˌɑːr.t̬əˈfɪʃ.əl/", m:"人造的 / 人工的", em:"Made or produced by human beings rather than occurring naturally.", ex:"This juice contains no artificial colors or preservatives.", ex2:"Artificial intelligence is changing the world.", s:"synthetic", cl:"artificial intelligence", c:"Technology"},
+            {id:"14", w:"Obesity", p:"n.", pr:"/oʊˈbiː.sə.t̬i/", m:"肥胖症", em:"The state or condition of being very fat or overweight.", ex:"Childhood obesity is a growing concern in many countries.", ex2:"A poor diet can lead to obesity.", s:"corpulence", cl:"fight obesity", c:"Health"},
+            {id:"15", w:"Epidemic", p:"n.", pr:"/ˌep.əˈdem.ɪk/", m:"流行病", em:"A widespread occurrence of an infectious disease.", ex:"The government took measures to stop the flu epidemic.", ex2:"Obesity has reached epidemic proportions.", s:"outbreak", cl:"global epidemic", c:"Health"},
+            {id:"16", w:"Curriculum", p:"n.", pr:"/kəˈrɪk.jə.ləm/", m:"課程", em:"The subjects comprising a course of study.", ex:"The school curriculum includes math, science, art, and history.", ex2:"Teachers are discussing changes to the curriculum.", s:"syllabus", cl:"core curriculum", c:"Education"},
+            {id:"17", w:"Literacy", p:"n.", pr:"/ˈlɪt̬.ɚ.ə.si/", m:"識字能力", em:"The ability to read and write.", ex:"Improving literacy is a primary goal of the education system.", ex2:"Computer literacy is essential today.", s:"reading ability", cl:"media literacy", c:"Education"},
+            {id:"18", w:"Revenue", p:"n.", pr:"/ˈrev.ə.nuː/", m:"營收 / 收入", em:"Income, especially when of a company or organization.", ex:"The company's annual revenue exceeded one million dollars.", ex2:"Tax revenue has increased this year.", s:"income", cl:"annual revenue", c:"Business"},
+            {id:"19", w:"Monopoly", p:"n.", pr:"/məˈnɑː.pəl.i/", m:"壟斷", em:"The exclusive possession or control of the supply or trade.", ex:"The company has a virtual monopoly on the market.", ex2:"The government is trying to break up the monopoly.", s:"dominance", cl:"state monopoly", c:"Business"},
+            {id:"20", w:"Incentive", p:"n.", pr:"/ɪnˈsen.t̬ɪv/", m:"誘因 / 獎勵", em:"A thing that motivates.", ex:"Tax incentives were offered to attract new businesses.", ex2:"There is no incentive for them to work harder.", s:"motivation", cl:"financial incentive", c:"Business"},
+            {id:"21", w:"Aesthetic", p:"adj.", pr:"/esˈθet̬.ɪk/", m:"美學的", em:"Concerned with beauty.", ex:"The new building has great aesthetic appeal.", ex2:"The changes were made for aesthetic reasons.", s:"artistic", cl:"aesthetic value", c:"Art"},
+            {id:"22", w:"Heritage", p:"n.", pr:"/ˈher.ɪ.t̬ɪdʒ/", m:"遺產", em:"Property inherited.", ex:"We must preserve our national cultural heritage.", ex2:"The building is part of the city's heritage.", s:"legacy", cl:"cultural heritage", c:"Culture"},
+            {id:"23", w:"Abstract", p:"adj.", pr:"/ˈæb.strækt/", m:"抽象的", em:"Existing in thought.", ex:"Truth and beauty are abstract concepts.", ex2:"His paintings are becoming more abstract.", s:"theoretical", cl:"abstract art", c:"Art"},
+            {id:"24", w:"Contemporary", p:"adj.", pr:"/kənˈtem.pə.rer.i/", m:"當代的", em:"Living at the same time.", ex:"He is a fan of contemporary art and music.", ex2:"Contemporary society.", s:"modern", cl:"contemporary society", c:"Culture"},
+            {id:"25", w:"Infrastructure", p:"n.", pr:"/ˈɪn.frəˌstrʌk.tʃɚ/", m:"基礎建設", em:"Basic structures.", ex:"The country needs to invest more in infrastructure.", ex2:"The war damaged the country's infrastructure.", s:"facilities", cl:"transport infrastructure", c:"Society"},
+            {id:"26", w:"Allocate", p:"v.", pr:"/ˈæl.ə.keɪt/", m:"分配", em:"Distribute.", ex:"We must allocate funds for the new project.", ex2:"Time was allocated for questions.", s:"assign", cl:"allocate resources", c:"Society"},
+            {id:"27", w:"Urbanization", p:"n.", pr:"/ˌɝː.bən.əˈzeɪ.ʃən/", m:"都市化", em:"The process of making an area more urban.", ex:"Rapid urbanization has led to housing shortages.", ex2:"Urbanization is a global trend.", s:"development", cl:"rapid urbanization", c:"Society"},
+            {id:"28", w:"Demographic", p:"adj.", pr:"/ˌdem.əˈɡræf.ɪk/", m:"人口統計的", em:"Relating to population.", ex:"Demographic changes are affecting the economy.", ex2:"The demographic profile of the city is changing.", s:"statistical", cl:"demographic data", c:"Society"},
+            {id:"29", w:"Deteriorate", p:"v.", pr:"/dɪˈtɪr.i.ə.reɪt/", m:"惡化", em:"Become worse.", ex:"His health began to deteriorate rapidly.", ex2:"Relations deteriorated.", s:"worsen", cl:"condition deteriorated", c:"General"},
+            {id:"30", w:"Mitigation", p:"n.", pr:"/ˌmɪt̬.əˈɡeɪ.ʃən/", m:"緩和", em:"Reducing severity.", ex:"Flood mitigation strategies are essential.", ex2:"Mitigation of risks.", s:"reduction", cl:"risk mitigation", c:"General"},
+            {id:"31", w:"Renewable", p:"adj.", pr:"/rɪˈnuː.ə.bəl/", m:"可再生的", em:"Not depleted.", ex:"Solar energy is a renewable resource.", ex2:"We need to switch to renewable energy sources.", s:"sustainable", cl:"renewable energy", c:"Environment"},
+            {id:"32", w:"Profound", p:"adj.", pr:"/prəˈfaʊnd/", m:"深遠的", em:"Very great.", ex:"The war had a profound impact on the country.", ex2:"He has a profound knowledge of the subject.", s:"deep", cl:"profound effect", c:"General"},
+            {id:"33", w:"Discrepancy", p:"n.", pr:"/dɪˈskrep.ən.si/", m:"差異", em:"Lack of compatibility.", ex:"There is a discrepancy between the two reports.", ex2:"We found a slight discrepancy in the accounts.", s:"inconsistency", cl:"huge discrepancy", c:"General"},
+            {id:"34", w:"Simultaneous", p:"adj.", pr:"/ˌsaɪ.məlˈteɪ.ni.əs/", m:"同時的", em:"Occurring at same time.", ex:"There was a simultaneous broadcast on TV and radio.", ex2:"Simultaneous translation was provided.", s:"concurrent", cl:"simultaneous interpretation", c:"General"},
+            {id:"35", w:"Spontaneous", p:"adj.", pr:"/spɑːnˈteɪ.ni.əs/", m:"自發的", em:"Unplanned.", ex:"The audience burst into spontaneous applause.", ex2:"It was a spontaneous decision.", s:"impulsive", cl:"spontaneous reaction", c:"General"},
+            {id:"36", w:"Consumption", p:"n.", pr:"/kənˈsʌmp.ʃən/", m:"消耗", em:"Using up.", ex:"We need to reduce our energy consumption.", ex2:"Alcohol consumption is strictly regulated.", s:"use", cl:"water consumption", c:"Environment"},
+            {id:"37", w:"Exacerbate", p:"v.", pr:"/ɪɡˈzæs.ɚ.beɪt/", m:"加劇", em:"Make worse.", ex:"Stress can exacerbate the illness.", ex2:"Exacerbate the problem.", s:"aggravate", cl:"exacerbate the situation", c:"General"},
+            {id:"38", w:"Pragmatic", p:"adj.", pr:"/præɡˈmæt̬.ɪk/", m:"務實的", em:"Sensible.", ex:"We need a pragmatic approach to solve this issue.", ex2:"He is a pragmatic leader.", s:"practical", cl:"pragmatic solution", c:"General"},
+            {id:"39", w:"Skeptical", p:"adj.", pr:"/ˈskep.tɪ.kəl/", m:"懷疑的", em:"Not convinced.", ex:"Many people are skeptical about the plan.", ex2:"Skeptical attitude.", s:"doubtful", cl:"remain skeptical", c:"General"},
+            {id:"40", w:"Vulnerable", p:"adj.", pr:"/ˈvʌl.nɚ.ə.bəl/", m:"易受傷的", em:"Susceptible to harm.", ex:"Children are vulnerable.", ex2:"Vulnerable position.", s:"helpless", cl:"vulnerable group", c:"Society"},
+            {id:"41", w:"Resilient", p:"adj.", pr:"/rɪˈzɪl.jənt/", m:"有彈性的", em:"Able to recover quickly.", ex:"The economy is resilient.", ex2:"Resilient personality.", s:"tough", cl:"remarkably resilient", c:"Economy"},
+            {id:"42", w:"Detrimental", p:"adj.", pr:"/ˌdet.rəˈmen.t̬əl/", m:"有害的", em:"Causing harm.", ex:"Smoking is detrimental to health.", ex2:"Detrimental effect.", s:"harmful", cl:"detrimental impact", c:"Health"},
+            {id:"43", w:"Beneficial", p:"adj.", pr:"/ˌben.əˈfɪʃ.əl/", m:"有益的", em:"Favorable.", ex:"Regular exercise is beneficial to your health.", ex2:"Mutually beneficial.", s:"advantageous", cl:"beneficial effect", c:"Health"},
+            {id:"44", w:"Indigenous", p:"adj.", pr:"/ɪnˈdɪdʒ.ə.nəs/", m:"本土的", em:"Native.", ex:"The kangaroo is indigenous to Australia.", ex2:"Indigenous culture.", s:"native", cl:"indigenous species", c:"Culture"},
+            {id:"45", w:"Integrity", p:"n.", pr:"/ɪnˈteɡ.rə.t̬i/", m:"正直", em:"Honesty.", ex:"He is a man of the highest integrity.", ex2:"Maintain integrity.", s:"honesty", cl:"personal integrity", c:"General"},
+            {id:"46", w:"Autonomy", p:"n.", pr:"/ɑːˈtɑː.nə.mi/", m:"自治權", em:"Self-government.", ex:"The region has autonomy.", ex2:"Teacher autonomy.", s:"independence", cl:"financial autonomy", c:"Politics"},
+            {id:"47", w:"Legislation", p:"n.", pr:"/ˌledʒ.ɪˈsleɪ.ʃən/", m:"立法", em:"Laws.", ex:"Introduce legislation.", ex2:"Pass legislation.", s:"law", cl:"new legislation", c:"Politics"},
+            {id:"48", w:"Subsequent", p:"adj.", pr:"/ˈsʌb.sɪ.kwənt/", m:"隨後的", em:"Coming after.", ex:"Subsequent events.", ex2:"Subsequent years.", s:"following", cl:"subsequent chapter", c:"General"},
+            {id:"49", w:"Viable", p:"adj.", pr:"/ˈvaɪ.ə.bəl/", m:"可行的", em:"Feasible.", ex:"A viable plan.", ex2:"Economically viable.", s:"feasible", cl:"viable option", c:"General"},
+            {id:"50", w:"Deficiency", p:"n.", pr:"/dɪˈfɪʃ.ən.si/", m:"缺乏", em:"Shortage.", ex:"Vitamin deficiency.", ex2:"Iron deficiency.", s:"shortage", cl:"deficiency in", c:"Health"}
+        ];
+
+        let fullDatabase=[], masterSet=new Set(), savedSet=new Set(), activeList=[], currentIndex=0;
+        let isSavedMode=false, isAnimating=false;
+        let spellList=[], spellIdx=0, spellScore=0, currentSpellWord="", spellScope='active';
+
+        // ================= 初始化 (強制 v39 資料覆寫) =================
+        window.onload = function() {
+            try {
+                // 強制覆寫舊版資料
+                if (!localStorage.getItem('ielts_version_v39_fixed')) {
+                    localStorage.clear();
+                    localStorage.setItem('ielts_version_v39_fixed', 'true');
+                }
+                
+                loadData();
+                
+                if (fullDatabase.length === 0) { 
+                    fullDatabase = [...starterPack];
+                    // 確保 ID 唯一
+                    fullDatabase.forEach(i=>{if(!i.id)i.id=i.w;});
+                    saveData(); 
+                }
+                
+                if (activeList.length === 0) replenishList();
+                renderCard(); updateStats();
+            } catch(e) { if(confirm("Data Error. Reset?")) resetAll(); }
+        };
+
+        function loadData() {
+            const db=localStorage.getItem('ielts_db_v39'), m=localStorage.getItem('ielts_master_v39'), s=localStorage.getItem('ielts_saved_v39'), a=localStorage.getItem('ielts_active_v39');
+            if(db) fullDatabase=JSON.parse(db); if(m) masterSet=new Set(JSON.parse(m)); if(s) savedSet=new Set(JSON.parse(s)); if(a) activeList=JSON.parse(a);
+        }
+        function saveData() {
+            localStorage.setItem('ielts_db_v39',JSON.stringify(fullDatabase)); localStorage.setItem('ielts_master_v39',JSON.stringify([...masterSet]));
+            localStorage.setItem('ielts_saved_v39',JSON.stringify([...savedSet])); localStorage.setItem('ielts_active_v39',JSON.stringify(activeList)); updateStats();
+        }
+        function replenishList() {
+            const candidates = fullDatabase.filter(i=>!masterSet.has(i.id)&&!savedSet.has(i.id)&&!activeList.some(a=>a.id===i.id));
+            while(activeList.length<10 && candidates.length>0) {
+                const r=Math.floor(Math.random()*candidates.length); activeList.push(candidates[r]); candidates.splice(r,1);
+            }
+            saveData(); if(currentIndex>=activeList.length) currentIndex=0;
+        }
+
+        // ================= 卡片操作 =================
+        function markAsMastered(e) {
+            e.stopPropagation(); if(activeList.length===0||isAnimating)return; isAnimating=true;
+            const item=activeList[currentIndex];
+            document.getElementById('overlay-mastered').classList.add('active');
+            setTimeout(()=>{
+                masterSet.add(item.id); if(savedSet.has(item.id)) savedSet.delete(item.id);
+                activeList.splice(currentIndex,1); if(!isSavedMode) replenishList();
+                if(currentIndex>=activeList.length) currentIndex=0;
+                saveData(); renderCard(); updateStats();
+                document.getElementById('overlay-mastered').classList.remove('active'); isAnimating=false;
+            },600);
+        }
+        function toggleSave(e) {
+            e.stopPropagation(); if(activeList.length===0||isAnimating)return;
+            if(isSavedMode) {
+                savedSet.delete(activeList[currentIndex].id); activeList.splice(currentIndex,1);
+                if(currentIndex>=activeList.length) currentIndex=0;
+                saveData(); renderCard(); updateStats(); return;
+            }
+            isAnimating=true; const item=activeList[currentIndex];
+            document.getElementById('overlay-saved').classList.add('active');
+            setTimeout(()=>{
+                savedSet.add(item.id); activeList.splice(currentIndex,1); replenishList();
+                if(currentIndex>=activeList.length) currentIndex=0;
+                saveData(); renderCard(); updateStats();
+                document.getElementById('overlay-saved').classList.remove('active'); isAnimating=false;
+            },600);
+        }
+        function toggleSavedMode(){
+            isSavedMode=!isSavedMode; currentIndex=0;
+            const btn=document.getElementById('btn-mode-saved');
+            if(isSavedMode){
+                const s=fullDatabase.filter(i=>savedSet.has(i.id)); if(s.length===0){alert("無收藏");isSavedMode=false;return;}
+                activeList=s; btn.classList.add('bg-blue-100','text-blue-700','border-blue-400');
+            }else{
+                const stored=JSON.parse(localStorage.getItem('ielts_active_v39')||"[]");
+                activeList=stored.filter(i=>!masterSet.has(i.id)&&!savedSet.has(i.id)); replenishList();
+                btn.classList.remove('bg-blue-100','text-blue-700','border-blue-400');
+            }
+            renderCard(); updateStats();
+        }
+        
+        function renderCard() {
+            document.getElementById('flipper').classList.remove('flipped');
+            if(activeList.length===0){document.getElementById('card-word').textContent=isSavedMode?"無收藏":"通關!";document.getElementById('card-meaning').textContent="請匯入";return;}
+            const d=activeList[currentIndex];
+            if(!d){replenishList();return;}
+            
+            document.getElementById('card-word').textContent=d.w;
+            document.getElementById('card-pos').textContent=d.p;
+            document.getElementById('card-pron').textContent=d.pr;
+            document.getElementById('card-pos-back').textContent=d.p;
+            document.getElementById('card-meaning').textContent=d.m;
+            document.getElementById('card-en-meaning').textContent=d.em;
+            
+            // 例句顯示 (v39 確保顯示)
+            document.getElementById('card-example-1').textContent = `"${d.ex}"`;
+            const ex2 = document.getElementById('ex2-container');
+            if(d.ex2) { ex2.classList.remove('hidden'); document.getElementById('card-example-2').textContent = `"${d.ex2}"`; }
+            else { ex2.classList.add('hidden'); }
+
+            document.getElementById('study-index').textContent=`佇列: ${currentIndex+1}/${activeList.length}`;
+            document.getElementById('study-category').textContent=d.c;
+            document.getElementById('card-syn').textContent = d.s || "-";
+            document.getElementById('card-col').textContent = d.cl || "-";
+
+            const isSaved=savedSet.has(d.id);
+            document.getElementById('icon-star-front').className=isSaved?'fa-solid fa-star text-xl text-yellow-400':'fa-regular fa-star text-xl text-slate-300';
+            document.getElementById('icon-star-back').className=isSaved?'fa-solid fa-star text-3xl text-yellow-400':'fa-regular fa-star text-3xl text-slate-600';
+        }
+        function flipCard(){document.getElementById('flipper').classList.toggle('flipped')}
+        function changeCard(d){if(activeList.length===0)return;currentIndex=(currentIndex+d+activeList.length)%activeList.length;renderCard();}
+
+        // Audio
+        function playFullAudio(e) {
+            if(e) e.stopPropagation();
+            if(activeList.length===0) return;
+            const d = activeList[currentIndex];
+            const icon = document.getElementById('icon-audio');
+            if('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                icon.classList.add('playing');
+                // 讀單字
+                const u1 = new SpeechSynthesisUtterance(d.w); u1.lang='en-US'; u1.rate=0.8;
+                // 讀主例句
+                const u2 = new SpeechSynthesisUtterance(d.ex); u2.lang='en-US'; u2.rate=0.9;
+                
+                u1.onend = () => window.speechSynthesis.speak(u2);
+                u2.onend = () => icon.classList.remove('playing');
+                
+                window.speechSynthesis.speak(u1);
+            }
+        }
+        function playSimpleAudio(word) {
+             if('speechSynthesis' in window) {
+                 const u = new SpeechSynthesisUtterance(word);
+                 u.lang = 'en-US';
+                 window.speechSynthesis.speak(u);
+             }
+        }
+
+        // Spell
+        function switchTab(t){
+            document.getElementById('view-study').classList.add('hidden');
+            document.getElementById('view-spelling').classList.add('hidden');
+            document.getElementById(`view-${t}`).classList.remove('hidden');
+            document.getElementById('tab-study').className = t==='study' ? "flex-1 py-2 rounded-md text-sm font-bold text-blue-600 bg-white shadow-sm" : "flex-1 py-2 rounded-md text-sm font-bold text-slate-500";
+            document.getElementById('tab-spelling').className = t==='spelling' ? "flex-1 py-2 rounded-md text-sm font-bold text-blue-600 bg-white shadow-sm" : "flex-1 py-2 rounded-md text-sm font-bold text-slate-500";
+            if(t==='spelling') startSpelling(spellScope);
+        }
+        function startSpelling(scope){
+            spellScope = scope;
+            ['active','saved','all'].forEach(k=>{document.getElementById(`btn-scope-${k}`).className=`flex-1 py-2 text-xs font-bold rounded-lg ${k===scope?'border border-blue-200 bg-blue-50 text-blue-600':'border border-slate-200 bg-white text-slate-400'}`});
+            if(scope==='active') spellList=[...activeList]; else if(scope==='saved') spellList=fullDatabase.filter(i=>savedSet.has(i.id)); else spellList=[...fullDatabase];
+            if(spellList.length<1){alert("無單字");return;}
+            spellList.sort(()=>0.5-Math.random()); spellList=spellList.slice(0,10);
+            spellIdx=0; spellScore=0; renderSpell();
+        }
+        function renderSpell(){
+            if(spellIdx>=spellList.length){alert(`分數: ${spellScore}`);switchTab('study');return;}
+            const d=spellList[spellIdx]; currentSpellWord=d.w;
+            document.getElementById('s-pos-hint').textContent=d.p;
+            document.getElementById('spell-mean-zh').textContent=d.m;
+            document.getElementById('spell-mean-en').textContent=d.em;
+            document.getElementById('spell-hint-letter').textContent=d.w.charAt(0).toUpperCase();
+            document.getElementById('spell-input').value=''; document.getElementById('spell-input').disabled=false; document.getElementById('spell-input').focus();
+            document.getElementById('spell-input').className="w-full text-center text-3xl font-bold border-b-2 border-slate-200 focus:border-blue-500 outline-none py-2 mb-6 bg-transparent placeholder-slate-200 text-slate-800";
+            document.getElementById('spell-feedback').textContent='';
+        }
+        function checkSpelling(){
+            const inp=document.getElementById('spell-input'); const val=inp.value.trim().toLowerCase(); if(!val)return; inp.disabled=true;
+            if(val===currentSpellWord.toLowerCase()){
+                spellScore+=10; inp.classList.add('spell-correct'); document.getElementById('spell-feedback').innerHTML='<span class="text-green-600">Correct!</span>';
+            }else{
+                inp.classList.add('spell-wrong'); document.getElementById('spell-feedback').innerHTML=`<span class="text-red-500">Ans: ${currentSpellWord}</span>`;
+                if(spellScope==='all'&&masterSet.has(currentSpellWord)){
+                    masterSet.delete(currentSpellWord); saveData(); 
+                    document.getElementById('spell-penalty-msg').classList.remove('hidden');
+                }
+            }
+            setTimeout(()=>{spellIdx++;renderSpell()},1500);
+        }
+        document.getElementById('spell-input').addEventListener('keypress',e=>{if(e.key==='Enter')checkSpelling()});
+
+        // Common
+        function updateStats(){document.getElementById('stat-total').textContent=fullDatabase.length;document.getElementById('stat-mastered').textContent=masterSet.size;document.getElementById('stat-saved').textContent=savedSet.size;}
+        function openDBModal(){document.getElementById('modal-db').classList.remove('hidden')}
+        function closeDBModal(){document.getElementById('modal-db').classList.add('hidden')}
+        function forceReset(){if(confirm("強制重置資料庫？")){localStorage.clear();location.reload();}}
+        function resetAll(){if(confirm("重置?")){localStorage.clear();location.reload();}}
+        function importFile(input){
+            const f=input.files[0];if(!f)return;
+            const r=new FileReader();
+            r.onload=e=>{try{
+                const d=JSON.parse(e.target.result); if(!Array.isArray(d))throw 0;
+                let add=0; const s=new Set(fullDatabase.map(i=>i.w));
+                d.forEach(i=>{if(!s.has(i.w)){i.id=i.w;fullDatabase.push(i);add++}});
+                saveData();alert(`匯入 ${add} 字`);closeDBModal();if(activeList.length===0)replenishList();renderCard();updateStats();
+            }catch{alert("格式錯誤")}};
+            r.readAsText(f);
+        }
+    </script>
+</body>
+</html>
