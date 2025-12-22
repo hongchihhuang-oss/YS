@@ -1,0 +1,564 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Songti TC'; -webkit-text-stroke: #000000; min-height: 17.0px}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Songti TC'; -webkit-text-stroke: #000000}
+    span.s1 {font-kerning: none}
+    span.s2 {font: 12.0px 'Apple Color Emoji'; font-kerning: none}
+    span.s3 {font: 12.0px 'Zapf Dingbats'; font-kerning: none}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+<p class="p2"><span class="s1">&lt;html lang="zh-TW"&gt;</span></p>
+<p class="p2"><span class="s1">&lt;head&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;title&gt;IELTS Vocab Pro&lt;/title&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;!-- PWA Settings --&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta name="apple-mobile-web-app-capable" content="yes"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta name="apple-mobile-web-app-title" content="IELTS Pro"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/student-male.png"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://unpkg.com/@babel/standalone/babel.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;!--<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span><span class="s2">⚠️</span><span class="s1"> 資料庫載入區<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span>請確保 vocab.js 與此檔案在同一目錄下。</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>--&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="vocab_a.js"&gt;&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="vocab_b.js"&gt;&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;style&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>body { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>.scrollbar-hide::-webkit-scrollbar { display: none; }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>.pb-safe { padding-bottom: env(safe-area-inset-bottom); }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>.bottom-nav-fixed { position: sticky; bottom: 0; left: 0; right: 0; z-index: 50; background-color: white; }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</span></p>
+<p class="p2"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p2"><span class="s1">&lt;body class="bg-slate-50 text-slate-800 h-[100dvh] w-full overflow-hidden"&gt;</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="root"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script type="text/babel"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>const { useState, useEffect, useMemo, useCallback, useRef } = React;</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>// Icons</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>const Icons = {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Book: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/&gt;&lt;path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Edit: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/&gt;&lt;path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Speaker: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/&gt;&lt;path d="M19.07 4.93a10 10 0 0 1 0 14.14"/&gt;&lt;path d="M15.54 8.46a5 5 0 0 1 0 7.07"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Database: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;ellipse cx="12" cy="5" rx="9" ry="3"/&gt;&lt;path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/&gt;&lt;path d="M3 5v14c0 1.66 4 3 9 3s 9-1.34 9-3V5"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Trophy: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/&gt;&lt;path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/&gt;&lt;path d="M4 22h16"/&gt;&lt;path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/&gt;&lt;path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/&gt;&lt;path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>ArrowRight: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;line x1="5" y1="12" x2="19" y2="12"/&gt;&lt;polyline points="12 5 19 12 12 19"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>ArrowLeft: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;line x1="19" y1="12" x2="5" y2="12"/&gt;&lt;polyline points="12 19 5 12 12 5"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Check: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;polyline points="20 6 9 17 4 12"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>RotateCw: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/&gt;&lt;path d="M21 3v5h-5"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Type: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;polyline points="4 7 4 4 20 4 20 7"/&gt;&lt;line x1="9" y1="20" x2="15" y2="20"/&gt;&lt;line x1="12" y1="4" x2="12" y2="20"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Link: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/&gt;&lt;path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Plus: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;line x1="12" y1="5" x2="12" y2="19"/&gt;&lt;line x1="5" y1="12" x2="19" y2="12"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Download: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/&gt;&lt;polyline points="7 10 12 15 17 10"/&gt;&lt;line x1="12" y1="15" x2="12" y2="3"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Upload: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/&gt;&lt;polyline points="17 8 12 3 7 8"/&gt;&lt;line x1="12" y1="3" x2="12" y2="15"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>FilePlus: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/&gt;&lt;polyline points="14 2 14 8 20 8"/&gt;&lt;line x1="12" y1="18" x2="12" y2="12"/&gt;&lt;line x1="9" y1="15" x2="15" y2="15"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Save: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/&gt;&lt;polyline points="17 21 17 13 7 13 7 21"/&gt;&lt;polyline points="7 3 7 8 15 8"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Magic: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="m5 8 6 6"/&gt;&lt;path d="m4 14 6-6 2-3"/&gt;&lt;path d="M2 5h12"/&gt;&lt;path d="M7 2h1"/&gt;&lt;path d="m22 22-5-10-5 10"/&gt;&lt;path d="M14 7h8"/&gt;&lt;path d="M21 12h-2"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Loader: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"&gt;&lt;path d="M21 12a9 9 0 1 1-6.219-8.56"/&gt;&lt;/svg&gt;,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>Refresh: () =&gt; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/&gt;&lt;path d="M3 3v5h5"/&gt;&lt;/svg&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>function App() {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>// Main Data State</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [words, setWords] = useState([]);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [customWords, setCustomWords] = useState([]);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [mode, setMode] = useState('dashboard');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [loading, setLoading] = useState(true);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [currentIndex, setCurrentIndex] = useState(0);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [activePosTab, setActivePosTab] = useState(0);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [isLargeText, setIsLargeText] = useState(false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>// Add Word State</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [newWord, setNewWord] = useState({ word: "", ipa: "", pos: "n.", def_zh: "", def_en: "", sentence: "", sentence_trans: "" });</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [isFetching, setIsFetching] = useState(false);</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>// Quiz State</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [quizQueue, setQuizQueue] = useState([]);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [currentQuizIndex, setCurrentQuizIndex] = useState(0);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [quizScore, setQuizScore] = useState(0);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [quizFinished, setQuizFinished] = useState(false);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [userInput, setUserInput] = useState("");</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [quizStatus, setQuizStatus] = useState("question");</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const [quizResult, setQuizResult] = useState(null);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const inputRef = useRef(null);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const fileInputRef = useRef(null);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const importLibInputRef = useRef(null);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const pendingUpdatesRef = useRef({});</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>// 1. 初始化資料</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const savedProgress = localStorage.getItem('ielts_progress_v12');<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const savedCustom = localStorage.getItem('ielts_custom_v12');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const savedFontSize = localStorage.getItem('ielts_font_pref');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (savedFontSize === 'large') setIsLargeText(true);</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>let loadedCustom = [];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (savedCustom) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>try { loadedCustom = JSON.parse(savedCustom); setCustomWords(loadedCustom); } catch (e) { console.error(e); }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>// </span><span class="s2">⚠️</span><span class="s1"> 資料庫載入檢查</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const library = window.VOCAB_LIBRARY || [];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (library.length === 0) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>alert("</span><span class="s2">⚠️</span><span class="s1"> 讀取不到單字庫！\n\n可能原因：\n1. vocab.js 檔案遺失或不在同一目錄。\n2. vocab.js 內容有語法錯誤 (例如少了逗號)。\n\n請檢查檔案後重新整理頁面。");</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>let allWords = [...library, ...loadedCustom];</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (savedProgress) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>try {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>const progressMap = JSON.parse(savedProgress);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>allWords = allWords.map(w =&gt; ({</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>...w,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>priority: progressMap[w.id] !== undefined ? progressMap[w.id] : (w.priority || 10)</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>}));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>} catch (e) { console.error(e); }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>// 去重</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const uniqueWords = Array.from(new Map(allWords.map(item =&gt; [item.id, item])).values());</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>setWords(uniqueWords.sort((a, b) =&gt; b.priority - a.priority));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>setLoading(false);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>}, []);</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>// 2. 自動存檔</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (words.length &gt; 0) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>const progressMap = {};</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>words.forEach(w =&gt; progressMap[w.id] = w.priority);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>localStorage.setItem('ielts_progress_v12', JSON.stringify(progressMap));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>}, [words]);</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>localStorage.setItem('ielts_custom_v12', JSON.stringify(customWords));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>}, [customWords]);</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>// 強制重讀資料庫</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const forceReloadLibrary = () =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if(confirm("確定要重新載入資料庫嗎？\n這將合併 vocab.js 的最新內容，但保留您的學習進度。")) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>const library = window.VOCAB_LIBRARY || [];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>if (library.length === 0) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>alert("錯誤：vocab.js 依然讀取失敗。");</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>return;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>const savedProgress = localStorage.getItem('ielts_progress_v12');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>let progressMap = {};</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>if (savedProgress) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>try { progressMap = JSON.parse(savedProgress); } catch (e) {}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>// 重新合併</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>let newAllWords = [...library, ...customWords];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>newAllWords = newAllWords.map(w =&gt; ({</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>...w,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>priority: progressMap[w.id] !== undefined ? progressMap[w.id] : (w.priority || 10)</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>}));</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>const uniqueWords = Array.from(new Map(newAllWords.map(item =&gt; [item.id, item])).values());</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>setWords(uniqueWords.sort((a, b) =&gt; b.priority - a.priority));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>alert(`成功載入！目前共有 ${uniqueWords.length} 個單字。`);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>// </span><span class="s2">🔄</span><span class="s1"> 匯入擴充字庫</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const importLibraryFile = (event) =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const file = event.target.files[0];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (!file) return;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const reader = new FileReader();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>reader.onload = (e) =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>try {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>const newWordsData = JSON.parse(e.target.result);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>if (Array.isArray(newWordsData)) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>if(confirm(`準備匯入 ${newWordsData.length} 個新單字。`)) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>const updatedCustom = [...customWords, ...newWordsData];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>setCustomWords(updatedCustom);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>const updatedAllWords = [...words, ...newWordsData].sort((a, b) =&gt; b.priority - a.priority);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>setWords(updatedAllWords);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>alert("匯入成功！");</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>} else { alert("錯誤：檔案格式不正確"); }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>} catch (err) { alert("錯誤：無法讀取檔案。"); }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>reader.readAsText(file);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>// </span><span class="s2">🔄</span><span class="s1"> 備份與還原</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const exportBackup = () =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const data = {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>date: new Date().toISOString(),</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>progress: JSON.parse(localStorage.getItem('ielts_progress_v12') || '{}'),</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>customWords: customWords</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const url = URL.createObjectURL(blob);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const a = document.createElement("a");</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>a.href = url;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>a.download = `ielts_backup_${new Date().toISOString().slice(0,10)}.json`;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>document.body.appendChild(a);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>a.click();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>document.body.removeChild(a);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const importBackup = (event) =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const file = event.target.files[0];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (!file) return;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const reader = new FileReader();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>reader.onload = (e) =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>try {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>const data = JSON.parse(e.target.result);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>if (data.progress &amp;&amp; Array.isArray(data.customWords)) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>if(confirm(`還原備份 (${data.date})？`)) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>localStorage.setItem('ielts_progress_v12', JSON.stringify(data.progress));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>localStorage.setItem('ielts_custom_v12', JSON.stringify(data.customWords));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>alert("還原成功！重整中...");</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>window.location.reload();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>} else { alert("錯誤：檔案格式不符。"); }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>} catch (err) { alert("錯誤：無法讀取檔案。"); }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>reader.readAsText(file);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>// </span><span class="s2">➕</span><span class="s1"> 新增單字</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const handleAddWord = (e) =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>e.preventDefault();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (!newWord.word || !newWord.def_zh) return alert("請輸入單字和中文定義！");</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const newEntry = {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>id: Date.now(), word: newWord.word, ipa: newWord.ipa, priority: 10,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>meanings: [{ pos: newWord.pos, items: [{ def_zh: newWord.def_zh, def_en: newWord.def_en, sentence: newWord.sentence, sentence_trans: newWord.sentence_trans, synonyms: [], phrases: [] }] }]</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const updatedCustom = [...customWords, newEntry];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>setCustomWords(updatedCustom);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const updatedWords = [...words, newEntry].sort((a, b) =&gt; b.priority - a.priority);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>setWords(updatedWords);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>alert(`已新增：${newWord.word}`);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>setMode('dashboard');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>setNewWord({ word: "", ipa: "", pos: "n.", def_zh: "", def_en: "", sentence: "", sentence_trans: "" });</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const toggleFontSize = () =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const newState = !isLargeText;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>setIsLargeText(newState);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>localStorage.setItem('ielts_font_pref', newState ? 'large' : 'normal');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const stats = useMemo(() =&gt; ({</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>critical: words.filter(w =&gt; w.priority &gt;= 8).length,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>learning: words.filter(w =&gt; w.priority &gt; 2 &amp;&amp; w.priority &lt; 8).length,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>mastered: words.filter(w =&gt; w.priority &lt;= 2).length,</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>total: words.length</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>}), [words]);</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const speak = (text) =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if ('speechSynthesis' in window) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>window.speechSynthesis.cancel();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>const utterance = new SpeechSynthesisUtterance(text);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>utterance.lang = 'en-US';</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>utterance.rate = 0.85;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>window.speechSynthesis.speak(utterance);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const jumpToWord = (targetWordStr) =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const targetIndex = words.findIndex(w =&gt; w.word.toLowerCase() === targetWordStr.toLowerCase());</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (targetIndex !== -1) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>setCurrentIndex(targetIndex);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>setActivePosTab(0);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>setTimeout(() =&gt; speak(words[targetIndex].word), 100);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>} else {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>alert(`Word not found: ${targetWordStr}`);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const applyPendingUpdates = useCallback(() =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const updates = { ...pendingUpdatesRef.current };</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (Object.keys(updates).length === 0) return;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>pendingUpdatesRef.current = {};</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>setWords(prev =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>const updated = prev.map(w =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>if (updates[w.id] !== undefined) return { ...w, priority: updates[w.id] };</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>return w;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>return updated.sort((a, b) =&gt; b.priority - a.priority);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>}, []);</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const handleExitMode = () =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (mode === 'quiz') applyPendingUpdates();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>setMode('dashboard');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (mode === 'study' &amp;&amp; words[currentIndex]) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>const currentWord = words[currentIndex];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>speak(currentWord.word);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>const timer = setTimeout(() =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>if(currentWord.meanings[activePosTab]?.items[0]?.sentence) {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>speak(currentWord.meanings[activePosTab].items[0].sentence);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>}, 1200);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>return () =&gt; clearTimeout(timer);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>}, [currentIndex, mode, activePosTab, words]);</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const highlightSentence = (sentence, word) =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>if (!sentence || !word) return sentence;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const regex = new RegExp(`\\b(${word.slice(0, 3)}\\w*)`, 'gi');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>const parts = sentence.split(regex);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>return parts.map((part, i) =&gt;<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>regex.test(part) || part.toLowerCase().startsWith(word.slice(0,3).toLowerCase()) ?<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;span key={i} className="text-red-800 font-extrabold"&gt;{part}&lt;/span&gt; : part</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>if (loading) return &lt;div className="flex h-screen items-center justify-center text-indigo-600 font-bold"&gt;Loading...&lt;/div&gt;;</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>const currentWord = words[currentIndex];</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>return (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="flex flex-col h-full bg-slate-50 font-sans max-w-md mx-auto shadow-2xl overflow-hidden"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>{/* Header */}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className="bg-white px-5 py-4 border-b border-slate-100 flex items-center justify-between sticky top-0 z-10"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button onClick={handleExitMode} className="flex items-center gap-2 active:opacity-70 transition-opacity"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold shadow-sm"&gt;P&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;span className="text-lg font-bold text-slate-900"&gt;IELTS Pro&lt;/span&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="flex items-center gap-3"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>{mode === 'study' &amp;&amp; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;button onClick={toggleFontSize} className={`p-2 rounded-lg transition-colors ${isLargeText ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;Icons.Type /&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>)}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>{mode === 'dashboard' &amp;&amp; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;button onClick={() =&gt; setMode('add')} className="p-2 rounded-lg bg-indigo-50 text-indigo-600 active:bg-indigo-100 transition-colors shadow-sm"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;Icons.Plus /&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>)}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="flex gap-2 text-[10px] font-bold"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;span className="text-amber-700 bg-amber-100 px-2 py-1 rounded border border-amber-200"&gt;{stats.critical} WEAK&lt;/span&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;span className="text-green-700 bg-green-100 px-2 py-1 rounded border border-green-200"&gt;{stats.mastered} OK&lt;/span&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>{/* Dashboard */}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>{mode === 'dashboard' &amp;&amp; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="flex-1 p-5 overflow-y-auto space-y-4 smooth-scroll"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 mb-4"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="flex justify-between items-start mb-2"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="text-xs font-bold text-indigo-200 tracking-widest opacity-80"&gt;DATABASE&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;Icons.Database /&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="text-5xl font-extrabold mb-4 tracking-tight"&gt;{stats.total}&lt;span className="text-sm font-medium ml-2 text-indigo-200"&gt;words&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="flex gap-2"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="flex-1 bg-white/10 rounded-xl p-3 text-center border border-white/10 backdrop-blur-sm"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;div className="font-bold text-2xl"&gt;{stats.critical}&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;div className="text-[10px] uppercase opacity-80 font-bold"&gt;Review&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="flex-1 bg-white/10 rounded-xl p-3 text-center border border-white/10 backdrop-blur-sm"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;div className="font-bold text-2xl"&gt;{stats.mastered}&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;div className="text-[10px] uppercase opacity-80 font-bold"&gt;Mastered&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;button onClick={() =&gt; { setMode('study'); setCurrentIndex(0); }} className="w-full bg-white p-5 rounded-3xl border border-slate-100 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="flex items-center gap-4"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner"&gt;&lt;Icons.Book /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="text-left"&gt;&lt;div className="text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors"&gt;Study Mode&lt;/div&gt;&lt;div className="text-sm text-slate-500 font-medium"&gt;Auto-play &amp; Priority Sort&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="text-slate-300"&gt;&lt;Icons.ArrowRight /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;button onClick={() =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>const queue = [...words].sort(() =&gt; Math.random() - 0.5).slice(0, 10);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>setQuizQueue(queue); setCurrentQuizIndex(0); setQuizScore(0); setQuizFinished(false); setQuizStatus("question"); setUserInput("");</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>pendingUpdatesRef.current = {}; setMode('quiz');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>}} className="w-full bg-white p-5 rounded-3xl border border-slate-100 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="flex items-center gap-4"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 shadow-inner"&gt;&lt;Icons.Edit /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="text-left"&gt;&lt;div className="text-lg font-bold text-slate-800 group-hover:text-teal-600 transition-colors"&gt;Spelling Quiz&lt;/div&gt;&lt;div className="text-sm text-slate-500 font-medium"&gt;Type to verify mastery&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="text-slate-300"&gt;&lt;Icons.ArrowRight /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>{/* </span><span class="s2">⚙️</span><span class="s1"> Data Management */}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="mt-8 bg-slate-100 p-4 rounded-2xl border border-slate-200"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="text-xs font-bold text-slate-400 uppercase mb-3 tracking-widest text-center"&gt;Data &amp; Backup&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="flex flex-col gap-3"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="flex gap-3"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;button onClick={forceReloadLibrary} className="flex-1 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center gap-2 shadow-sm hover:bg-slate-50 active:scale-95"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;Icons.Refresh /&gt; Reload</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;button onClick={() =&gt; importLibInputRef.current.click()} className="flex-1 py-3 rounded-xl bg-white border border-slate-200 text-indigo-600 font-bold text-sm flex items-center justify-center gap-2 shadow-sm hover:bg-slate-50 active:scale-95"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;Icons.FilePlus /&gt; Import</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;input type="file" ref={importLibInputRef} onChange={importLibraryFile} className="hidden" accept=".json" /&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="flex gap-3"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;button onClick={exportBackup} className="flex-1 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center gap-2 shadow-sm hover:bg-slate-50 active:scale-95"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;Icons.Download /&gt; Backup</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;button onClick={() =&gt; fileInputRef.current.click()} className="flex-1 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center gap-2 shadow-sm hover:bg-slate-50 active:scale-95"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;Icons.Upload /&gt; Restore</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;input type="file" ref={fileInputRef} onChange={importBackup} className="hidden" accept=".json" /&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span></span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="mt-8 text-center pb-8"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;button onClick={() =&gt; { if(confirm("確定要清除所有紀錄？")) { localStorage.removeItem('ielts_vocab_progress_v12'); localStorage.removeItem('ielts_custom_v12'); window.location.reload(); } }} className="flex items-center justify-center gap-2 mx-auto text-xs text-slate-400 font-medium border-b border-slate-300 pb-0.5 hover:text-red-500 hover:border-red-300 transition-colors"&gt;&lt;Icons.RotateCw /&gt; Reset All Progress&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>)}</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>{/* Add Word Mode */}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>{mode === 'add' &amp;&amp; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="flex-1 p-5 overflow-y-auto bg-white"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="flex items-center justify-between mb-6"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;h2 className="text-2xl font-bold text-slate-800"&gt;Add New Word&lt;/h2&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;button onClick={() =&gt; setMode('dashboard')} className="p-2 bg-slate-100 rounded-full text-slate-500"&gt;&lt;Icons.ArrowLeft /&gt;&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;form onSubmit={handleAddWord} className="space-y-4 pb-20"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div&gt;&lt;label className="text-xs font-bold text-slate-400 uppercase"&gt;Word&lt;/label&gt;&lt;input required className="w-full p-3 border-2 border-slate-200 rounded-xl mt-1 focus:border-indigo-600 outline-none font-bold text-lg" value={newWord.word} onChange={e =&gt; setNewWord({...newWord, word: e.target.value})} placeholder="e.g. Epiphany" /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="flex gap-4"&gt;&lt;div className="flex-1"&gt;&lt;label className="text-xs font-bold text-slate-400 uppercase"&gt;IPA&lt;/label&gt;&lt;input className="w-full p-3 border-2 border-slate-200 rounded-xl mt-1 focus:border-indigo-600 outline-none" value={newWord.ipa} onChange={e =&gt; setNewWord({...newWord, ipa: e.target.value})} placeholder="/ipa/" /&gt;&lt;/div&gt;&lt;div className="w-24"&gt;&lt;label className="text-xs font-bold text-slate-400 uppercase"&gt;POS&lt;/label&gt;&lt;select className="w-full p-3 border-2 border-slate-200 rounded-xl mt-1 focus:border-indigo-600 outline-none bg-white" value={newWord.pos} onChange={e =&gt; setNewWord({...newWord, pos: e.target.value})}&gt;&lt;option value="n."&gt;n.&lt;/option&gt;&lt;option value="v."&gt;v.&lt;/option&gt;&lt;option value="adj."&gt;adj.&lt;/option&gt;&lt;option value="adv."&gt;adv.&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div&gt;&lt;label className="text-xs font-bold text-indigo-600 uppercase"&gt;Definition (Chinese) *&lt;/label&gt;&lt;input required className="w-full p-3 border-2 border-indigo-100 bg-indigo-50/50 rounded-xl mt-1 focus:border-indigo-600 outline-none" value={newWord.def_zh} onChange={e =&gt; setNewWord({...newWord, def_zh: e.target.value})} placeholder="中文定義..." /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div&gt;&lt;label className="text-xs font-bold text-slate-400 uppercase"&gt;Definition (English)&lt;/label&gt;&lt;input className="w-full p-3 border-2 border-slate-200 rounded-xl mt-1 focus:border-indigo-600 outline-none" value={newWord.def_en} onChange={e =&gt; setNewWord({...newWord, def_en: e.target.value})} placeholder="English definition..." /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div&gt;&lt;label className="text-xs font-bold text-slate-400 uppercase"&gt;Example Sentence&lt;/label&gt;&lt;textarea className="w-full p-3 border-2 border-slate-200 rounded-xl mt-1 focus:border-indigo-600 outline-none h-24" value={newWord.sentence} onChange={e =&gt; setNewWord({...newWord, sentence: e.target.value})} placeholder="Example sentence..." /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div&gt;&lt;label className="text-xs font-bold text-slate-400 uppercase"&gt;Sentence Translation&lt;/label&gt;&lt;input className="w-full p-3 border-2 border-slate-200 rounded-xl mt-1 focus:border-indigo-600 outline-none" value={newWord.sentence_trans} onChange={e =&gt; setNewWord({...newWord, sentence_trans: e.target.value})} placeholder="句子中譯..." /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="pt-4"&gt;&lt;button type="submit" className="w-full py-4 rounded-xl bg-indigo-600 text-white font-bold shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-transform"&gt;&lt;Icons.Save /&gt; Save Word&lt;/button&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/form&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>)}</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>{/* Study Mode */}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>{mode === 'study' &amp;&amp; currentWord &amp;&amp; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="flex-1 flex flex-col bg-slate-50 overflow-hidden relative"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="flex-1 px-4 overflow-y-auto py-4 scrollbar-hide pb-24 smooth-scroll"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden relative"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className={`h-1.5 w-full ${currentWord.priority &gt; 8 ? 'bg-red-500' : currentWord.priority &gt; 4 ? 'bg-amber-400' : 'bg-green-500'}`}&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="p-6 border-b border-slate-50 bg-slate-50/50"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;div className="flex justify-between items-start"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;div&gt;&lt;h2 className="text-4xl font-extrabold text-slate-900 mb-1 tracking-tight"&gt;{currentWord.word}&lt;/h2&gt;&lt;span className="font-serif italic text-slate-500 text-lg"&gt;{currentWord.ipa}&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;button onClick={() =&gt; speak(currentWord.word)} className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-sm hover:bg-indigo-100 active:scale-95 transition-all"&gt;&lt;Icons.Speaker /&gt;&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="flex px-6 border-b border-slate-100 bg-white sticky top-0 z-10 pt-4 gap-2 overflow-x-auto scrollbar-hide"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>{currentWord.meanings.map((m, idx) =&gt; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;button key={idx} onClick={() =&gt; { setActivePosTab(idx); speak(currentWord.word); }} className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${activePosTab === idx ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}&gt;{m.pos}&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>))}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="p-6 space-y-6"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>{currentWord.meanings[activePosTab] &amp;&amp; currentWord.meanings[activePosTab].items.map((item, i) =&gt; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;div key={i} className="pl-4 border-l-4 border-indigo-100 animate-in fade-in slide-in-from-right-4 duration-300"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                </span>&lt;div className={`font-bold text-slate-800 mb-2 ${isLargeText ? 'text-2xl' : 'text-xl'}`}&gt;{item.def_zh}&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                </span>&lt;div className={`text-slate-500 mb-5 font-medium leading-relaxed ${isLargeText ? 'text-lg' : 'text-sm'}`}&gt;{item.def_en}&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                </span>{(item.synonyms || item.phrases) &amp;&amp; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;div className="mb-5 flex flex-col gap-3"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                        </span>{item.synonyms &amp;&amp; item.synonyms.length &gt; 0 &amp;&amp; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                            </span>&lt;div className="flex flex-wrap gap-2 items-center"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                                </span>&lt;span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded"&gt;Synonyms&lt;/span&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                                </span>{item.synonyms.map((syn, si) =&gt; {</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                                    </span>const targetIndex = words.findIndex(w =&gt; w.word.toLowerCase() === syn.toLowerCase());</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                                    </span>const isLink = targetIndex !== -1;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                                    </span>return &lt;span key={si} onClick={(e) =&gt; { if(isLink) { e.stopPropagation(); jumpToWord(syn); } }} className={`px-2 py-1 rounded-md font-medium transition-colors flex items-center gap-1 ${isLargeText ? 'text-base' : 'text-xs'} ${isLink ? 'bg-blue-50 text-blue-600 cursor-pointer hover:bg-blue-100 hover:underline' : 'bg-indigo-50 text-indigo-600'}`}&gt;{syn}{isLink &amp;&amp; &lt;span className="opacity-50"&gt;&lt;Icons.Link /&gt;&lt;/span&gt;}&lt;/span&gt;;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                                </span>})}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                        </span>)}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                        </span>{item.phrases &amp;&amp; item.phrases.length &gt; 0 &amp;&amp; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                            </span>&lt;div className="flex flex-col gap-1"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                                </span>&lt;span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded w-fit"&gt;Phrases&lt;/span&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                                </span>{item.phrases.map((ph, pi) =&gt; &lt;span key={pi} className={`text-slate-600 pl-1 ${isLargeText ? 'text-base' : 'text-xs'}`}&gt;• {ph}&lt;/span&gt;)}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                        </span>)}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                </span>)}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                </span>&lt;div onClick={() =&gt; speak(item.sentence)} className="bg-slate-50 p-5 rounded-2xl border border-slate-100 cursor-pointer active:scale-[0.98] active:bg-indigo-50 transition-all group"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;p className={`text-slate-700 italic mb-3 font-serif leading-relaxed ${isLargeText ? 'text-xl' : 'text-base'}`}&gt;"{highlightSentence(item.sentence, currentWord.word)}"&lt;/p&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;div className="flex justify-between items-end"&gt;&lt;p className={`text-slate-400 font-medium ${isLargeText ? 'text-base' : 'text-xs'}`}&gt;{item.sentence_trans}&lt;/p&gt;&lt;span className="text-indigo-300 opacity-50 group-hover:opacity-100 transition-opacity"&gt;&lt;Icons.Speaker /&gt;&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>))}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="bottom-nav-fixed bg-white px-5 py-4 border-t border-slate-100 flex gap-3 pb-safe shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.08)]"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;button onClick={() =&gt; { if(currentIndex &gt; 0) { setCurrentIndex(p =&gt; p - 1); setActivePosTab(0); } }} disabled={currentIndex === 0} className="flex-1 h-14 rounded-2xl border-2 border-slate-100 font-bold text-slate-600 disabled:opacity-30 flex items-center justify-center gap-2 active:bg-slate-50 transition-colors"&gt;&lt;Icons.ArrowLeft /&gt; Prev&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;button onClick={() =&gt; { if(currentIndex &lt; words.length - 1) { setCurrentIndex(p =&gt; p + 1); setActivePosTab(0); } }} disabled={currentIndex === words.length - 1} className="flex-1 h-14 rounded-2xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-200 disabled:opacity-50 flex items-center justify-center gap-2 active:bg-indigo-700 active:scale-95 transition-all"&gt;Next &lt;Icons.ArrowRight /&gt;&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>)}</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>{/* Quiz Mode */}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>{mode === 'quiz' &amp;&amp; (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="flex-1 flex flex-col p-5 bg-white overflow-y-auto pb-safe"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>{!quizFinished ? (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="flex-1 flex flex-col justify-center min-h-[500px]"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="flex justify-between mb-4 font-bold text-slate-400 text-xs uppercase tracking-wider"&gt;&lt;span&gt;Q: {currentQuizIndex + 1}/{quizQueue.length}&lt;/span&gt;&lt;span className="text-indigo-600 bg-indigo-50 px-2 py-1 rounded"&gt;Score: {quizScore}&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;div className="bg-indigo-600 py-3 text-center text-white text-[10px] font-extrabold tracking-[0.2em] uppercase"&gt;Spelling Bee&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;div className="p-8 text-center"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;div className="mb-8"&gt;&lt;div className="text-3xl font-extrabold text-slate-800 mb-2 leading-tight"&gt;{quizQueue[currentQuizIndex].meanings[0].items[0].def_zh}&lt;/div&gt;&lt;div className="text-sm text-slate-500 font-medium"&gt;{quizQueue[currentQuizIndex].meanings[0].items[0].def_en}&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>{quizStatus === 'question' ? (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                </span>&lt;form onSubmit={(e) =&gt; { e.preventDefault(); if(!userInput.trim()) return; const correct = userInput.trim().toLowerCase() === quizQueue[currentQuizIndex].word.toLowerCase(); setQuizResult({ correct, word: quizQueue[currentQuizIndex].word }); setQuizStatus("feedback"); if(correct) { setQuizScore(s =&gt; s+1); speak("Correct"); } else { speak(quizQueue[currentQuizIndex].word); } pendingUpdatesRef.current[quizQueue[currentQuizIndex].id] = correct ? Math.max(1, quizQueue[currentQuizIndex].priority - 3) : 20; }} className="flex flex-col gap-6"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;div className="relative"&gt;&lt;span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-2xl font-bold"&gt;{quizQueue[currentQuizIndex].word.charAt(0)}&lt;/span&gt;&lt;input autoFocus value={userInput} onChange={e =&gt; setUserInput(e.target.value)} className="w-full h-16 pl-12 pr-4 text-center text-2xl font-bold border-2 border-slate-200 rounded-2xl focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 outline-none uppercase bg-slate-50 tracking-wide" placeholder="_ _ _ _" autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck="false" data-form-type="other" /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;button type="submit" className="w-full bg-indigo-600 text-white h-14 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-200 active:scale-95 transition-transform"&gt;Check Answer&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                </span>&lt;/form&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>) : (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                </span>&lt;div className="flex flex-col items-center animate-in zoom-in duration-200"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${quizResult.correct ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}&gt;&lt;span className="text-3xl font-bold"&gt;{quizResult.correct ? &lt;Icons.Check /&gt; : '</span><span class="s3">✘</span><span class="s1">'}&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;div className="text-3xl font-extrabold text-slate-800 mb-8 tracking-tight"&gt;{quizResult.word}&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;button onClick={() =&gt; { if (currentQuizIndex &lt; quizQueue.length - 1) { setCurrentQuizIndex(p =&gt; p + 1); setQuizStatus("question"); setUserInput(""); } else { setQuizFinished(true); applyPendingUpdates(); } }} className="w-full bg-slate-900 text-white h-14 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-transform"&gt;Next Question </span><span class="s3">➜</span><span class="s1">&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                            </span>)}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>) : (</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="flex-1 flex flex-col justify-center items-center text-center animate-in zoom-in"&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="text-indigo-600 mb-6 scale-150"&gt;&lt;Icons.Trophy /&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;h2 className="text-3xl font-extrabold text-slate-900 mb-2"&gt;Quiz Complete!&lt;/h2&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;p className="text-slate-500 mb-10 text-lg"&gt;Score: &lt;span className="text-indigo-600 font-bold text-2xl"&gt;{quizScore}&lt;/span&gt; &lt;span className="text-sm"&gt;/ {quizQueue.length}&lt;/span&gt;&lt;/p&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;button onClick={handleExitMode} className="w-full max-w-xs bg-slate-900 text-white h-14 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform"&gt;Back to Dashboard&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                            </span>)}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span>)}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span>);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p1"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>const root = ReactDOM.createRoot(document.getElementById('root'));</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span>root.render(&lt;App /&gt;);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1">&lt;/body&gt;</span></p>
+<p class="p2"><span class="s1">&lt;/html&gt;</span></p>
+</body>
+</html>
