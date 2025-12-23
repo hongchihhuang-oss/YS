@@ -93,7 +93,9 @@
             Volume2: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>,
             VolumeX: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>,
             Eye: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
-            EyeOff: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            EyeOff: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+            Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+            Upload: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         };
 
         function App() {
@@ -118,6 +120,7 @@
             const [showChineseInQuiz, setShowChineseInQuiz] = useState(false); 
             
             const inputRef = useRef(null);
+            const fileInputRef = useRef(null);
             const pendingUpdatesRef = useRef({});
 
             useEffect(() => {
@@ -141,6 +144,7 @@
                     } catch (e) { console.error(e); }
                 }
 
+                // Initial Sort: Unfamiliar (High Priority) First
                 const uniqueWords = Array.from(new Map(allWords.map(item => [item.id, item])).values());
                 const sortedWords = uniqueWords.sort((a, b) => {
                     if (b.priority !== a.priority) return b.priority - a.priority;
@@ -164,6 +168,45 @@
                     localStorage.removeItem('ielts_progress_v26');
                     window.location.reload();
                 }
+            };
+
+            // Export Progress
+            const exportProgress = () => {
+                const progressMap = {};
+                words.forEach(w => progressMap[w.id] = w.priority);
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(progressMap));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                const date = new Date().toISOString().slice(0, 10);
+                downloadAnchorNode.setAttribute("download", `ielts_progress_backup_${date}.json`);
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+            };
+
+            // Import Progress
+            const importProgress = (event) => {
+                const fileReader = new FileReader();
+                fileReader.readAsText(event.target.files[0], "UTF-8");
+                fileReader.onload = e => {
+                    try {
+                        const progressMap = JSON.parse(e.target.result);
+                        setWords(prevWords => {
+                            const updatedWords = prevWords.map(w => ({
+                                ...w,
+                                priority: progressMap[w.id] !== undefined ? progressMap[w.id] : (w.priority || 10)
+                            }));
+                            // Re-sort after import
+                            return updatedWords.sort((a, b) => {
+                                if (b.priority !== a.priority) return b.priority - a.priority;
+                                return a.word.localeCompare(b.word);
+                            });
+                        });
+                        alert("進度匯入成功！");
+                    } catch (error) {
+                        alert("匯入失敗：檔案格式錯誤");
+                    }
+                };
             };
 
             const toggleFontSize = () => {
@@ -242,6 +285,7 @@
                 }
             };
 
+            // Exit logic - Force Sort
             const handleExitMode = () => {
                 if (mode === 'quiz') {
                     setWords(prev => {
@@ -252,6 +296,7 @@
                         }
                         pendingUpdatesRef.current = {};
                         
+                        // 🔴 Sort: Critical Error (20) > Unfamiliar (10) > Review (5) > Familiar (1)
                         return nextWords.sort((a, b) => {
                             if (b.priority !== a.priority) return b.priority - a.priority;
                             return a.word.localeCompare(b.word);
@@ -448,8 +493,15 @@
                                 <div className="text-slate-300"><Icons.ArrowRight /></div>
                             </button>
                             
-                            <div className="mt-8 text-center pb-8">
-                                <button onClick={forceReloadLibrary} className="flex items-center justify-center gap-2 mx-auto text-xs text-slate-400 font-medium border-b border-slate-300 pb-0.5"><Icons.Refresh /> Reset Database</button>
+                            <div className="mt-8 pb-8 flex justify-center gap-4">
+                                <button onClick={exportProgress} className="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm active:bg-slate-50">
+                                    <Icons.Download /> 匯出進度
+                                </button>
+                                <label className="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm active:bg-slate-50 cursor-pointer">
+                                    <Icons.Upload /> 匯入進度
+                                    <input type="file" ref={fileInputRef} onChange={importProgress} accept=".json" className="hidden" />
+                                </label>
+                                <button onClick={forceReloadLibrary} className="flex items-center justify-center gap-2 text-xs text-slate-400 font-medium border-b border-slate-300 pb-0.5"><Icons.Refresh /> Reset</button>
                             </div>
                         </div>
                     )}
@@ -517,7 +569,14 @@
                     {/* Quiz Mode */}
                     {mode === 'quiz' && (
                         <div className="flex-1 flex flex-col p-5 bg-white overflow-y-auto pb-safe">
-                            {!quizFinished && quizQueue[currentQuizIndex] ? (
+                            {quizFinished ? (
+                                <div className="flex-1 flex flex-col justify-center items-center text-center animate-in zoom-in">
+                                    <div className="text-indigo-600 mb-6 scale-150"><Icons.Trophy /></div>
+                                    <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Quiz Complete!</h2>
+                                    <p className="text-slate-500 mb-10 text-lg">Score: <span className="text-indigo-600 font-bold text-2xl">{quizScore}</span> <span className="text-sm">/ {quizQueue.length}</span></p>
+                                    <button onClick={handleExitMode} className="w-full max-w-xs bg-slate-900 text-white h-14 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform">Back to Dashboard</button>
+                                </div>
+                            ) : quizQueue[currentQuizIndex] ? (
                                 <div className="flex-1 flex flex-col justify-center min-h-[500px]">
                                     <div className="flex justify-between mb-4 font-bold text-slate-400 text-xs uppercase tracking-wider"><span>Q: {currentQuizIndex + 1}/{quizQueue.length}</span><span className="text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Score: {quizScore}</span></div>
                                     <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden relative">
@@ -535,7 +594,7 @@
                                                     <div className="min-h-[60px] flex items-center justify-center">
                                                         {showChineseInQuiz ? (
                                                             <div className="text-3xl font-extrabold text-slate-900 leading-tight animate-in fade-in">
-                                                                {quizQueue[currentQuizIndex].meanings[0].items[0].def_zh}
+                                                                {quizQueue[currentQuizIndex].meanings[0]?.items[0]?.def_zh}
                                                             </div>
                                                         ) : (
                                                             <div className="text-sm text-slate-300 font-bold tracking-widest uppercase border-2 border-dashed border-slate-200 px-6 py-3 rounded-xl bg-slate-50 flex items-center gap-2 hover:border-indigo-200 hover:text-indigo-300 transition-colors">
@@ -547,7 +606,7 @@
 
                                                 {/* English Definition - Bigger & Black */}
                                                 <div className="text-3xl text-black font-bold leading-snug mt-6 border-t border-slate-100 pt-6 px-2">
-                                                    {quizQueue[currentQuizIndex].meanings[0].items[0].def_en}
+                                                    {quizQueue[currentQuizIndex].meanings[0]?.items[0]?.def_en}
                                                 </div>
                                             </div>
                                             
@@ -556,14 +615,14 @@
                                                 <button onClick={() => setShowQuizHint(!showQuizHint)} className={`p-2 rounded-full transition-colors ${showQuizHint ? 'bg-yellow-100 text-yellow-600' : 'bg-slate-100 text-slate-600'}`} title="Show Example"><Icons.Bulb /></button>
                                             </div>
                                             
-                                            {showQuizHint && <div className="mb-6 p-3 bg-yellow-50 border border-yellow-100 rounded-xl animate-in fade-in zoom-in duration-300"><p className="text-base text-slate-700 italic font-serif">"{getMaskedSentence(quizQueue[currentQuizIndex].meanings[0].items[0].sentence, quizQueue[currentQuizIndex].word)}"</p></div>}
+                                            {showQuizHint && <div className="mb-6 p-3 bg-yellow-50 border border-yellow-100 rounded-xl animate-in fade-in zoom-in duration-300"><p className="text-base text-slate-700 italic font-serif">"{getMaskedSentence(quizQueue[currentQuizIndex].meanings[0]?.items[0]?.sentence, quizQueue[currentQuizIndex].word)}"</p></div>}
                                             
                                             {quizStatus === 'question' ? (
                                                 <form onSubmit={handleSubmitSpelling} className="flex flex-col gap-6">
                                                     <div className="flex items-center justify-center gap-2">
                                                         {/* POS Label FIRST */}
                                                         <span className="bg-indigo-100 text-indigo-700 px-3 py-4 rounded-xl text-lg font-extrabold uppercase shadow-sm border border-indigo-200 min-w-[3.5rem]">
-                                                            {quizQueue[currentQuizIndex].meanings[0].pos}
+                                                            {quizQueue[currentQuizIndex].meanings[0]?.pos}
                                                         </span>
                                                         
                                                         {/* Hint & Input */}
@@ -592,12 +651,7 @@
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex-1 flex flex-col justify-center items-center text-center animate-in zoom-in">
-                                    <div className="text-indigo-600 mb-6 scale-150"><Icons.Trophy /></div>
-                                    <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Quiz Complete!</h2>
-                                    <p className="text-slate-500 mb-10 text-lg">Score: <span className="text-indigo-600 font-bold text-2xl">{quizScore}</span> <span className="text-sm">/ {quizQueue.length}</span></p>
-                                    <button onClick={handleExitMode} className="w-full max-w-xs bg-slate-900 text-white h-14 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform">Back to Dashboard</button>
-                                </div>
+                                <div className="flex-1 flex items-center justify-center">Loading Question...</div>
                             )}
                         </div>
                     )}
