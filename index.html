@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IELTS Vocab Pro</title>
+    <title>IELTS Vocab Pro - Ultimate</title>
     
     <!-- PWA Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="IELTS Pro">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/student-male.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,8 +15,7 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- 載入資料庫 -->
-    <script src="vocab.js"></script>
+    <!-- 載入資料庫 (請確保檔案都存在於同一目錄) -->
     <script src="vocab_a.js"></script>
     <script src="vocab_b.js"></script>
     <script src="vocab_c.js"></script>
@@ -37,6 +35,8 @@
     <script src="vocab_tu.js"></script>
     <script src="vocab_last.js"></script>
     <script src="vocab_miss.js"></script>
+
+    <!-- 補丁系列 (必須放在最後) -->
     <script src="vocab_patch1.js"></script>
     <script src="vocab_patch2.js"></script>
     <script src="vocab_patch3.js"></script>
@@ -47,7 +47,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-        .bottom-nav-fixed { position: sticky; bottom: 0; left: 0; right: 0; z-index: 50; background-color: white; }
+        .smooth-scroll { scroll-behavior: smooth; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-[100dvh] w-full overflow-hidden">
@@ -57,7 +57,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-        // Icons
+        // Icons Component
         const Icons = {
             Book: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
             Edit: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
@@ -67,36 +67,24 @@
             ArrowRight: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
             ArrowLeft: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
             Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
-            RotateCw: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>,
             Type: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>,
             Link: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
-            Plus: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
-            Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
-            Upload: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
-            Save: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
-            Magic: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 7h8"/><path d="M21 12h-2"/></svg>,
-            Loader: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>,
             Refresh: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>,
-            FilePlus: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>,
             Bulb: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.4 1.5-3.8 0-3.2-2.8-5.7-6-5.7s-6 2.5-6 5.7c0 1.4.5 2.8 1.5 3.8.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>,
-            Alert: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
-            Zap: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Zap: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+            Target: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+            ThumbUp: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
         };
 
         function App() {
             // Main Data State
             const [words, setWords] = useState([]);
-            const [customWords, setCustomWords] = useState([]);
             const [mode, setMode] = useState('dashboard');
             const [loading, setLoading] = useState(true);
             const [currentIndex, setCurrentIndex] = useState(0);
             const [activePosTab, setActivePosTab] = useState(0);
             const [fontSizeLevel, setFontSizeLevel] = useState(0);
             
-            // Add Word State
-            const [newWord, setNewWord] = useState({ word: "", ipa: "", pos: "n.", def_zh: "", def_en: "", sentence: "", sentence_trans: "" });
-            const [isFetching, setIsFetching] = useState(false);
-
             // Quiz State
             const [quizQueue, setQuizQueue] = useState([]);
             const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
@@ -106,28 +94,21 @@
             const [quizStatus, setQuizStatus] = useState("question");
             const [quizResult, setQuizResult] = useState(null);
             const [showQuizHint, setShowQuizHint] = useState(false);
+            const [quizType, setQuizType] = useState(null); // 'top10', 'weak', 'random'
             
             const inputRef = useRef(null);
-            const fileInputRef = useRef(null);
-            const importLibInputRef = useRef(null);
             const pendingUpdatesRef = useRef({});
 
             // 1. 初始化資料
             useEffect(() => {
-                const savedProgress = localStorage.getItem('ielts_progress_v21'); 
-                const savedCustom = localStorage.getItem('ielts_custom_v21');
+                const savedProgress = localStorage.getItem('ielts_progress_v22'); // 更新版本號以防衝突
                 const savedFontLevel = localStorage.getItem('ielts_font_level');
                 
                 if (savedFontLevel) setFontSizeLevel(parseInt(savedFontLevel, 10));
 
-                let loadedCustom = [];
-                if (savedCustom) {
-                    try { loadedCustom = JSON.parse(savedCustom); setCustomWords(loadedCustom); } catch (e) { console.error(e); }
-                }
-
-                // 讀取 window.VOCAB_LIBRARY (由外部 js 檔案載入)
+                // 讀取 window.VOCAB_LIBRARY
                 const library = window.VOCAB_LIBRARY || [];
-                let allWords = [...library, ...loadedCustom];
+                let allWords = [...library];
 
                 if (savedProgress) {
                     try {
@@ -139,12 +120,19 @@
                     } catch (e) { console.error(e); }
                 }
 
+                // 去重與排序：優先級高的在前面 (Unfamiliar)，優先級低的在後面 (Familiar)
                 const uniqueWords = Array.from(new Map(allWords.map(item => [item.id, item])).values());
                 
-                setWords(uniqueWords.sort((a, b) => {
-                    if (b.priority !== a.priority) return b.priority - a.priority;
+                // Priority Definitions:
+                // 10: Unfamiliar / New
+                // 5-9: Learning
+                // 1: Familiar (Mastered) - User manually set or passed Top 10 exam
+                const sortedWords = uniqueWords.sort((a, b) => {
+                    if (b.priority !== a.priority) return b.priority - a.priority; // 降序：10 在前，1 在後
                     return a.word.localeCompare(b.word);
-                }));
+                });
+                
+                setWords(sortedWords);
                 setLoading(false);
             }, []);
 
@@ -153,27 +141,17 @@
                 if (words.length > 0) {
                     const progressMap = {};
                     words.forEach(w => progressMap[w.id] = w.priority);
-                    localStorage.setItem('ielts_progress_v21', JSON.stringify(progressMap));
+                    localStorage.setItem('ielts_progress_v22', JSON.stringify(progressMap));
                 }
             }, [words]);
 
-            useEffect(() => {
-                localStorage.setItem('ielts_custom_v21', JSON.stringify(customWords));
-            }, [customWords]);
-
             // 強制重讀資料庫
             const forceReloadLibrary = () => {
-                if(confirm("確定要重新載入資料庫嗎？\n這將合併所有 vocab 檔案的最新內容。")) {
-                    localStorage.removeItem('ielts_progress_v21');
+                if(confirm("確定要重新載入資料庫嗎？\n這將重置所有進度。")) {
+                    localStorage.removeItem('ielts_progress_v22');
                     window.location.reload();
                 }
             };
-
-            // 匯入與備份
-            const importLibraryFile = (event) => { /* Logic omitted for brevity */ };
-            const exportBackup = () => { /* Logic omitted */ };
-            const importBackup = (event) => { /* Logic omitted */ };
-            const handleAddWord = (e) => { e.preventDefault(); /* Logic omitted */ };
 
             const toggleFontSize = () => {
                 const newLevel = (fontSizeLevel + 1) % 3;
@@ -181,7 +159,34 @@
                 localStorage.setItem('ielts_font_level', newLevel.toString());
             };
 
-            // Font Sizes
+            // Link Function Fix: 跳轉到指定單字
+            const jumpToWord = (targetWord) => {
+                const index = words.findIndex(w => w.word.toLowerCase() === targetWord.toLowerCase());
+                if (index !== -1) {
+                    setCurrentIndex(index);
+                    setActivePosTab(0);
+                    speak(words[index].word);
+                } else {
+                    alert(`Word "${targetWord}" not found in database.`);
+                }
+            };
+
+            // Set Word as Familiar (Mastered)
+            const markAsFamiliar = (e) => {
+                e.stopPropagation();
+                const wordId = words[currentIndex].id;
+                // 更新狀態：將優先級設為 1 (熟悉)
+                // 為了不讓畫面跳動太劇烈，我們先更新狀態，但排序會在下次重整或特定操作後生效
+                setWords(prev => prev.map(w => w.id === wordId ? { ...w, priority: 1 } : w));
+                // 顯示提示
+                // 這裡可以加一個簡單的 Toast，目前先用簡單的變色反饋，或自動跳下一張
+                // 自動跳下一張 (Optional)
+                if (currentIndex < words.length - 1) {
+                    setCurrentIndex(c => c + 1);
+                    setActivePosTab(0);
+                }
+            };
+
             const fontSizes = {
                 def_zh: ['text-xl', 'text-2xl', 'text-3xl'],
                 def_en: ['text-sm', 'text-lg', 'text-xl'],
@@ -191,9 +196,9 @@
             };
 
             const stats = useMemo(() => ({
-                critical: words.filter(w => w.priority >= 8).length,
-                learning: words.filter(w => w.priority > 2 && w.priority < 8).length,
-                mastered: words.filter(w => w.priority <= 2).length,
+                unfamiliar: words.filter(w => w.priority >= 8).length, // 不熟
+                learning: words.filter(w => w.priority > 2 && w.priority < 8).length, // 學習中
+                familiar: words.filter(w => w.priority <= 2).length, // 熟悉
                 total: words.length
             }), [words]);
 
@@ -216,7 +221,11 @@
                         if (updates[w.id] !== undefined) return { ...w, priority: updates[w.id] };
                         return w;
                     });
-                    return updated.sort((a, b) => b.priority - a.priority);
+                    // Re-sort: Unfamiliar (10) -> Familiar (1)
+                    return updated.sort((a, b) => {
+                        if (b.priority !== a.priority) return b.priority - a.priority;
+                        return a.word.localeCompare(b.word);
+                    });
                 });
             }, []);
 
@@ -255,26 +264,53 @@
                 return sentence.replace(regex, '_______');
             };
 
-            // 🎯 Start Random Quiz
-            const startQuiz = () => {
-                const queue = [...words].sort(() => Math.random() - 0.5).slice(0, 10);
-                setQuizQueue(queue); setCurrentQuizIndex(0); setQuizScore(0); setQuizFinished(false); 
-                setQuizStatus("question"); setUserInput(""); setShowQuizHint(false);
-                pendingUpdatesRef.current = {}; 
-                setMode('quiz');
+            // --- New Quiz Logic ---
+
+            // 1. Top 10 Challenge (攻克前十)
+            const startTop10Quiz = () => {
+                // 取目前排序最前面的 10 個字 (通常是最不熟的)
+                // 排除已經標記為熟悉 (priority <= 2) 的字，雖然排序會把熟悉的放後面，但以防萬一
+                const targetWords = words.filter(w => w.priority > 2).slice(0, 10);
+                
+                if (targetWords.length === 0) {
+                    alert("太棒了！您已經沒有「不熟」的單字了！");
+                    return;
+                }
+
+                setQuizQueue(targetWords);
+                setQuizType('top10');
+                initQuiz();
             };
 
-            // 🎯 Start Weak Words Quiz
+            // 2. Random Weak (弱點擊破)
             const startWeakQuiz = () => {
-                let weakWords = words.filter(w => w.priority >= 8);
-                if (weakWords.length < 5) weakWords = words.filter(w => w.priority > 5);
-                if (weakWords.length === 0) {
-                    alert("恭喜！您目前沒有標記為「不熟」的單字。\n將為您隨機挑選單字進行複習。");
-                    startQuiz();
+                // 篩選 priority >= 7 的字
+                const weakWords = words.filter(w => w.priority >= 7);
+                if (weakWords.length < 5) {
+                    alert("您的弱點單字不足，將自動切換為隨機測驗！");
+                    startRandomQuiz();
                     return;
                 }
                 const queue = [...weakWords].sort(() => Math.random() - 0.5).slice(0, 10);
-                setQuizQueue(queue); setCurrentQuizIndex(0); setQuizScore(0); setQuizFinished(false); 
+                setQuizQueue(queue);
+                setQuizType('weak');
+                initQuiz();
+            };
+
+            // 3. Random All (隨機測驗)
+            const startRandomQuiz = () => {
+                // 排除已熟悉 (priority <= 2) 的單字，除非字數太少
+                let pool = words.filter(w => w.priority > 2);
+                if (pool.length < 10) pool = words; // 如果剩下的字太少，就全部考
+
+                const queue = [...pool].sort(() => Math.random() - 0.5).slice(0, 10);
+                setQuizQueue(queue);
+                setQuizType('random');
+                initQuiz();
+            };
+
+            const initQuiz = () => {
+                setCurrentQuizIndex(0); setQuizScore(0); setQuizFinished(false); 
                 setQuizStatus("question"); setUserInput(""); setShowQuizHint(false);
                 pendingUpdatesRef.current = {}; 
                 setMode('quiz');
@@ -290,15 +326,24 @@
                 setQuizResult({ isCorrect, correctWord: qWord.word });
                 setQuizStatus("feedback");
 
-                if (inputRef.current) inputRef.current.blur(); // Hide Keyboard
+                if (inputRef.current) inputRef.current.blur();
 
                 let newPriority = qWord.priority;
                 if (isCorrect) {
                     setQuizScore(prev => prev + 1);
-                    newPriority = Math.max(1, newPriority - 3); 
                     speak("Correct");
+                    
+                    // 特殊計分邏輯
+                    if (quizType === 'top10') {
+                        // 攻克前十：答對直接變熟悉 (Priority 1)
+                        newPriority = 1; 
+                    } else {
+                        // 一般測驗：稍微降低權重
+                        newPriority = Math.max(3, newPriority - 2);
+                    }
                 } else {
-                    newPriority = 20; 
+                    // 答錯：變回最不熟 (Priority 10)
+                    newPriority = 10; 
                     speak(qWord.word);
                 }
                 pendingUpdatesRef.current[qWord.id] = newPriority;
@@ -317,7 +362,6 @@
                 }
             };
 
-            // Focus input
             useEffect(() => {
                 if (mode === 'quiz' && quizStatus === 'question' && inputRef.current) {
                     setTimeout(() => inputRef.current.focus(), 100);
@@ -346,11 +390,8 @@
                                     </button>
                                 </>
                             )}
-                            {mode === 'dashboard' && (
-                                <button onClick={() => setMode('add')} className="p-2 rounded-lg bg-indigo-50 text-indigo-600 active:bg-indigo-100 transition-colors shadow-sm"><Icons.Plus /></button>
-                            )}
                             <div className="flex gap-2 text-[10px] font-bold">
-                                <span className="text-amber-700 bg-amber-100 px-2 py-1 rounded border border-amber-200">{stats.critical} WEAK</span>
+                                <span className="text-amber-700 bg-amber-100 px-2 py-1 rounded border border-amber-200">{stats.unfamiliar} 不熟</span>
                             </div>
                         </div>
                     </div>
@@ -358,64 +399,116 @@
                     {/* Dashboard */}
                     {mode === 'dashboard' && (
                         <div className="flex-1 p-5 overflow-y-auto space-y-4 smooth-scroll">
+                            {/* Stats Card */}
                             <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 mb-4">
                                 <div className="flex justify-between items-start mb-2"><div className="text-xs font-bold text-indigo-200 tracking-widest opacity-80">DATABASE</div><Icons.Database /></div>
                                 <div className="text-5xl font-extrabold mb-4 tracking-tight">{stats.total}<span className="text-sm font-medium ml-2 text-indigo-200">words</span></div>
                                 <div className="flex gap-2">
-                                    <div className="flex-1 bg-white/10 rounded-xl p-3 text-center border border-white/10 backdrop-blur-sm"><div className="font-bold text-2xl">{stats.critical}</div><div className="text-[10px] uppercase opacity-80 font-bold">Review</div></div>
-                                    <div className="flex-1 bg-white/10 rounded-xl p-3 text-center border border-white/10 backdrop-blur-sm"><div className="font-bold text-2xl">{stats.mastered}</div><div className="text-[10px] uppercase opacity-80 font-bold">Mastered</div></div>
+                                    <div className="flex-1 bg-white/10 rounded-xl p-3 text-center border border-white/10 backdrop-blur-sm"><div className="font-bold text-2xl">{stats.unfamiliar}</div><div className="text-[10px] uppercase opacity-80 font-bold">Unfamiliar</div></div>
+                                    <div className="flex-1 bg-white/10 rounded-xl p-3 text-center border border-white/10 backdrop-blur-sm"><div className="font-bold text-2xl">{stats.familiar}</div><div className="text-[10px] uppercase opacity-80 font-bold">Familiar</div></div>
                                 </div>
                             </div>
 
-                            <button onClick={() => { setMode('study'); setCurrentIndex(0); }} className="w-full bg-white p-5 rounded-3xl border border-slate-100 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
-                                <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner"><Icons.Book /></div><div className="text-left"><div className="text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">Study Mode</div><div className="text-sm text-slate-500 font-medium">Auto-play & Priority Sort</div></div></div><div className="text-slate-300"><Icons.ArrowRight /></div>
+                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2">Study</div>
+                            <button onClick={() => { setMode('study'); setCurrentIndex(0); }} className="w-full bg-white p-5 rounded-3xl border border-slate-100 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group mb-6">
+                                <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner"><Icons.Book /></div><div className="text-left"><div className="text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">開始學習</div><div className="text-sm text-slate-500 font-medium">不熟單字優先排序</div></div></div><div className="text-slate-300"><Icons.ArrowRight /></div>
                             </button>
 
-                            <button onClick={startWeakQuiz} className="w-full bg-white p-5 rounded-3xl border-2 border-amber-100 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
-                                <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner"><Icons.Zap /></div><div className="text-left"><div className="text-lg font-bold text-slate-800 group-hover:text-amber-600 transition-colors">Weak Words Quiz</div><div className="text-sm text-slate-500 font-medium text-amber-600">Focus on mistakes only</div></div></div><div className="text-amber-300"><Icons.ArrowRight /></div>
+                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2">Quiz Modes</div>
+                            
+                            {/* Quiz Type 1: Top 10 Challenge */}
+                            <button onClick={startTop10Quiz} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-red-500 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 shadow-inner"><Icons.Target /></div>
+                                    <div className="text-left">
+                                        <div className="text-lg font-bold text-slate-800 group-hover:text-red-600 transition-colors">🔥 攻克前十</div>
+                                        <div className="text-sm text-slate-500 font-medium">考過即標記為熟悉，不再出現</div>
+                                    </div>
+                                </div>
+                                <div className="text-red-300"><Icons.ArrowRight /></div>
                             </button>
 
-                            <button onClick={startQuiz} className="w-full bg-white p-5 rounded-3xl border border-slate-100 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
-                                <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 shadow-inner"><Icons.Edit /></div><div className="text-left"><div className="text-lg font-bold text-slate-800 group-hover:text-teal-600 transition-colors">Random Quiz</div><div className="text-sm text-slate-500 font-medium">Mix of all words</div></div></div><div className="text-slate-300"><Icons.ArrowRight /></div>
+                            {/* Quiz Type 2: Weak Words */}
+                            <button onClick={startWeakQuiz} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-amber-400 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner"><Icons.Zap /></div>
+                                    <div className="text-left">
+                                        <div className="text-lg font-bold text-slate-800 group-hover:text-amber-600 transition-colors">⚡️ 弱點擊破</div>
+                                        <div className="text-sm text-slate-500 font-medium">隨機測試不熟單字</div>
+                                    </div>
+                                </div>
+                                <div className="text-amber-300"><Icons.ArrowRight /></div>
+                            </button>
+
+                            {/* Quiz Type 3: Random */}
+                            <button onClick={startRandomQuiz} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-teal-400 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 shadow-inner"><Icons.Edit /></div>
+                                    <div className="text-left">
+                                        <div className="text-lg font-bold text-slate-800 group-hover:text-teal-600 transition-colors">🎲 隨機測驗</div>
+                                        <div className="text-sm text-slate-500 font-medium">全範圍隨機抽考</div>
+                                    </div>
+                                </div>
+                                <div className="text-slate-300"><Icons.ArrowRight /></div>
                             </button>
                             
                             <div className="mt-8 text-center pb-8">
-                                <button onClick={forceReloadLibrary} className="flex items-center justify-center gap-2 mx-auto text-xs text-slate-400 font-medium border-b border-slate-300 pb-0.5"><Icons.Refresh /> Reload DB</button>
+                                <button onClick={forceReloadLibrary} className="flex items-center justify-center gap-2 mx-auto text-xs text-slate-400 font-medium border-b border-slate-300 pb-0.5"><Icons.Refresh /> Reset Database</button>
                             </div>
                         </div>
                     )}
-
-                    {/* Add Word Mode */}
-                    {mode === 'add' && <div className="flex-1 bg-white">Add Word Placeholder</div>}
 
                     {/* Study Mode */}
                     {mode === 'study' && currentWord && (
                         <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden relative">
                             <div className="flex-1 px-4 overflow-y-auto py-4 scrollbar-hide pb-10 smooth-scroll">
                                 <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden relative">
-                                    <div className={`h-1.5 w-full ${currentWord.priority > 8 ? 'bg-red-500' : currentWord.priority > 4 ? 'bg-amber-400' : 'bg-green-500'}`}></div>
+                                    {/* Priority Bar */}
+                                    <div className={`h-1.5 w-full ${currentWord.priority <= 2 ? 'bg-green-500' : currentWord.priority >= 8 ? 'bg-red-500' : 'bg-amber-400'}`}></div>
+                                    
                                     <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                                         <button onClick={() => { if(currentIndex > 0) { setCurrentIndex(p => p - 1); setActivePosTab(0); } }} disabled={currentIndex === 0} className="p-3 rounded-full bg-white border border-slate-200 text-slate-400 disabled:opacity-30 active:scale-95 transition-transform"><Icons.ArrowLeft /></button>
                                         <div className="text-center"><h2 className="text-4xl font-extrabold text-slate-900 mb-1 tracking-tight">{currentWord.word}</h2><span className="font-serif italic text-slate-500 text-lg">{currentWord.ipa}</span></div>
                                         <button onClick={() => { if(currentIndex < words.length - 1) { setCurrentIndex(p => p + 1); setActivePosTab(0); } }} disabled={currentIndex === words.length - 1} className="p-3 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 disabled:opacity-50 active:scale-95 transition-transform"><Icons.ArrowRight /></button>
                                     </div>
-                                    <div className="flex justify-center border-b border-slate-100 bg-white sticky top-0 z-10 pt-4 gap-2 overflow-x-auto scrollbar-hide">
-                                        {currentWord.meanings.map((m, idx) => (
-                                            <button key={idx} onClick={() => { setActivePosTab(idx); speak(currentWord.word); }} className={`pb-3 px-6 text-sm font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${activePosTab === idx ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}>{m.pos}</button>
-                                        ))}
+                                    
+                                    {/* POS Tabs + Familiar Button */}
+                                    <div className="flex items-center border-b border-slate-100 bg-white sticky top-0 z-10 pt-2 px-2 gap-2 overflow-x-auto scrollbar-hide">
+                                        <div className="flex-1 flex justify-center gap-2">
+                                            {currentWord.meanings.map((m, idx) => (
+                                                <button key={idx} onClick={() => { setActivePosTab(idx); speak(currentWord.word); }} className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${activePosTab === idx ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}>{m.pos}</button>
+                                            ))}
+                                        </div>
+                                        <button onClick={markAsFamiliar} className={`ml-auto mb-2 p-2 rounded-xl flex items-center gap-1 text-xs font-bold transition-colors shadow-sm ${currentWord.priority <= 2 ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-green-50 hover:text-green-600'}`}>
+                                            <Icons.ThumbUp /> {currentWord.priority <= 2 ? '熟悉' : '設為熟悉'}
+                                        </button>
                                     </div>
+
                                     <div className="p-6 space-y-6 min-h-[300px]">
                                         {currentWord.meanings[activePosTab] && currentWord.meanings[activePosTab].items.map((item, i) => (
                                             <div key={i} className="pl-4 border-l-4 border-indigo-100 animate-in fade-in slide-in-from-right-4 duration-300">
                                                 <div className={`font-bold text-slate-800 mb-2 ${fontSizes.def_zh[fontSizeLevel]}`}>{item.def_zh}</div>
                                                 <div className={`text-slate-500 mb-5 font-medium leading-relaxed ${fontSizes.def_en[fontSizeLevel]}`}>{item.def_en}</div>
-                                                {/* Corrected Synonyms Rendering */}
+                                                
+                                                {/* Synonyms with Links */}
                                                 {(item.synonyms || item.phrases) && (
                                                     <div className="mb-5 flex flex-col gap-3">
-                                                        {item.synonyms && item.synonyms.length > 0 && <div className="flex flex-wrap gap-2 items-center"><span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded">Synonyms</span>{item.synonyms.map((syn, si) => { const targetIndex = words.findIndex(w => w.word.toLowerCase() === syn.toLowerCase()); const isLink = targetIndex !== -1; return <span key={si} onClick={(e) => { if(isLink) { e.stopPropagation(); jumpToWord(syn); } }} className={`px-2 py-1 rounded-md font-medium transition-colors flex items-center gap-1 ${fontSizes.tag[fontSizeLevel]} ${isLink ? 'bg-blue-50 text-blue-600 cursor-pointer hover:bg-blue-100 hover:underline' : 'bg-indigo-50 text-indigo-600'}`}>{syn}{isLink && <span className="opacity-50"><Icons.Link /></span>}</span>; })}</div>}
+                                                        {item.synonyms && item.synonyms.length > 0 && <div className="flex flex-wrap gap-2 items-center"><span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded">Synonyms</span>{item.synonyms.map((syn, si) => { 
+                                                            const targetIndex = words.findIndex(w => w.word.toLowerCase() === syn.toLowerCase()); 
+                                                            const isLink = targetIndex !== -1; 
+                                                            return (
+                                                                <span key={si} 
+                                                                    onClick={(e) => { if(isLink) { e.stopPropagation(); jumpToWord(syn); } }} 
+                                                                    className={`px-2 py-1 rounded-md font-medium transition-colors flex items-center gap-1 ${fontSizes.tag[fontSizeLevel]} ${isLink ? 'bg-blue-50 text-blue-600 cursor-pointer hover:bg-blue-100 hover:underline border border-blue-100' : 'bg-slate-100 text-slate-500'}`}
+                                                                >
+                                                                    {syn}{isLink && <span className="opacity-50 scale-75"><Icons.Link /></span>}
+                                                                </span>
+                                                            ); 
+                                                        })}</div>}
                                                         {item.phrases && item.phrases.length > 0 && <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded w-fit">Phrases</span>{item.phrases.map((ph, pi) => <span key={pi} className={`text-slate-600 pl-1 ${fontSizes.tag[fontSizeLevel]}`}>• {ph}</span>)}</div>}
                                                     </div>
                                                 )}
+
                                                 <div onClick={() => speak(item.sentence)} className="bg-slate-50 p-5 rounded-2xl border border-slate-100 cursor-pointer active:scale-[0.98] active:bg-indigo-50 transition-all group">
                                                     <p className={`text-slate-700 italic mb-3 font-serif leading-relaxed ${fontSizes.sentence[fontSizeLevel]}`}>"{highlightSentence(item.sentence, currentWord.word)}"</p>
                                                     <div className="flex justify-between items-end"><p className={`text-slate-400 font-medium ${fontSizes.trans[fontSizeLevel]}`}>{item.sentence_trans}</p><span className="text-indigo-300 opacity-50 group-hover:opacity-100 transition-opacity"><Icons.Speaker /></span></div>
@@ -435,7 +528,9 @@
                                 <div className="flex-1 flex flex-col justify-center min-h-[500px]">
                                     <div className="flex justify-between mb-4 font-bold text-slate-400 text-xs uppercase tracking-wider"><span>Q: {currentQuizIndex + 1}/{quizQueue.length}</span><span className="text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Score: {quizScore}</span></div>
                                     <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden">
-                                        <div className="bg-indigo-600 py-3 text-center text-white text-[10px] font-extrabold tracking-[0.2em] uppercase">{quizQueue[currentQuizIndex].meanings[0].pos.toUpperCase()}</div>
+                                        <div className={`py-3 text-center text-white text-[10px] font-extrabold tracking-[0.2em] uppercase ${quizType === 'top10' ? 'bg-red-600' : quizType === 'weak' ? 'bg-amber-500' : 'bg-teal-600'}`}>
+                                            {quizType === 'top10' ? 'TOP 10 CHALLENGE' : quizType === 'weak' ? 'WEAK WORDS' : 'RANDOM QUIZ'}
+                                        </div>
                                         <div className="p-8 text-center">
                                             <div className="mb-6">
                                                 <div className="text-3xl font-extrabold text-slate-800 mb-2 leading-tight">{quizQueue[currentQuizIndex].meanings[0].items[0].def_zh}</div>
@@ -450,7 +545,7 @@
                                                 <form onSubmit={handleSubmitSpelling} className="flex flex-col gap-6">
                                                     <div className="relative">
                                                         <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-2xl font-bold">{quizQueue[currentQuizIndex].word.charAt(0)}</span>
-                                                        <input ref={inputRef} autoFocus value={userInput} onChange={e => setUserInput(e.target.value)} className="w-full h-16 pl-12 pr-4 text-center text-2xl font-bold border-2 border-slate-200 rounded-2xl focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 outline-none uppercase bg-slate-50 tracking-wide" placeholder="_ _ _ _" autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck="false" data-form-type="other" />
+                                                        <input ref={inputRef} autoFocus value={userInput} onChange={e => setUserInput(e.target.value)} className="w-full h-16 pl-12 pr-4 text-center text-2xl font-bold border-2 border-slate-200 rounded-2xl focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 outline-none uppercase bg-slate-50 tracking-wide" placeholder="_ _ _ _" autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck="false" />
                                                     </div>
                                                     <button type="submit" className="w-full bg-indigo-600 text-white h-14 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-200 active:scale-95 transition-transform">Check Answer</button>
                                                 </form>
