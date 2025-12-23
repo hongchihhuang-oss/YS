@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IELTS Vocab Pro - Ultimate</title>
+    <title>IELTS Vocab Pro v1.0</title>
     
     <!-- PWA Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -144,7 +144,6 @@
                     } catch (e) { console.error(e); }
                 }
 
-                // Initial Sort: Unfamiliar (High Priority) First
                 const uniqueWords = Array.from(new Map(allWords.map(item => [item.id, item])).values());
                 const sortedWords = uniqueWords.sort((a, b) => {
                     if (b.priority !== a.priority) return b.priority - a.priority;
@@ -170,7 +169,6 @@
                 }
             };
 
-            // Export Progress
             const exportProgress = () => {
                 const progressMap = {};
                 words.forEach(w => progressMap[w.id] = w.priority);
@@ -184,7 +182,6 @@
                 downloadAnchorNode.remove();
             };
 
-            // Import Progress
             const importProgress = (event) => {
                 const fileReader = new FileReader();
                 fileReader.readAsText(event.target.files[0], "UTF-8");
@@ -196,7 +193,6 @@
                                 ...w,
                                 priority: progressMap[w.id] !== undefined ? progressMap[w.id] : (w.priority || 10)
                             }));
-                            // Re-sort after import
                             return updatedWords.sort((a, b) => {
                                 if (b.priority !== a.priority) return b.priority - a.priority;
                                 return a.word.localeCompare(b.word);
@@ -285,7 +281,6 @@
                 }
             };
 
-            // Exit logic - Force Sort
             const handleExitMode = () => {
                 if (mode === 'quiz') {
                     setWords(prev => {
@@ -296,7 +291,6 @@
                         }
                         pendingUpdatesRef.current = {};
                         
-                        // 🔴 Sort: Critical Error (20) > Unfamiliar (10) > Review (5) > Familiar (1)
                         return nextWords.sort((a, b) => {
                             if (b.priority !== a.priority) return b.priority - a.priority;
                             return a.word.localeCompare(b.word);
@@ -374,10 +368,11 @@
                 if (isCorrect) {
                     setQuizScore(prev => prev + 1);
                     speak(qWord.word);
+                    // Safe logic: Reset to normal learning priority (7), not familiar (1)
                     if (quizType === 'top10') {
-                        newPriority = 1; 
+                        newPriority = 7; 
                     } else {
-                        newPriority = Math.max(1, newPriority - 3);
+                        newPriority = Math.max(3, newPriority - 3);
                     }
                 } else {
                     newPriority = 20; 
@@ -399,6 +394,13 @@
                 }
             };
 
+            // Dynamic Font Size for Long Words
+            const getWordFontSize = (word) => {
+                if (word.length > 16) return "text-2xl"; // Super long
+                if (word.length > 12) return "text-3xl"; // Long
+                return "text-4xl"; // Normal
+            };
+
             if (loading) return <div className="flex h-screen items-center justify-center text-indigo-600 font-bold">Loading...</div>;
 
             const currentStudyWord = studyQueue[currentIndex];
@@ -409,7 +411,7 @@
                     <div className="bg-white px-5 py-4 border-b border-slate-100 flex items-center justify-between sticky top-0 z-10">
                         <button onClick={handleExitMode} className="flex items-center gap-2 active:opacity-70 transition-opacity">
                             <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">P</div>
-                            <span className="text-lg font-bold text-slate-900">IELTS Pro</span>
+                            <span className="text-lg font-bold text-slate-900">IELTS Pro <span className="text-xs text-slate-400 font-normal ml-1">v1.0</span></span>
                         </button>
                         
                         <div className="flex items-center gap-3">
@@ -427,7 +429,6 @@
                     {/* Dashboard */}
                     {mode === 'dashboard' && (
                         <div className="flex-1 p-5 overflow-y-auto space-y-4 smooth-scroll">
-                            {/* Stats & Entry Points */}
                             <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 mb-6">
                                 <div className="flex justify-between items-start mb-2"><div className="text-xs font-bold text-indigo-200 tracking-widest opacity-80">DATABASE</div><Icons.Database /></div>
                                 <div className="text-5xl font-extrabold mb-6 tracking-tight">{stats.total}<span className="text-sm font-medium ml-2 text-indigo-200">words</span></div>
@@ -445,7 +446,6 @@
                                 </div>
                             </div>
 
-                            {/* Auto Play Toggle */}
                             <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                     <div className={`p-2 rounded-lg ${autoPlay ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
@@ -465,7 +465,7 @@
                                     <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 shadow-inner"><Icons.Target /></div>
                                     <div className="text-left">
                                         <div className="text-lg font-bold text-slate-800 group-hover:text-red-600 transition-colors">🔥 攻克前十</div>
-                                        <div className="text-sm text-slate-500 font-medium">考過即標記為熟悉</div>
+                                        <div className="text-sm text-slate-500 font-medium">針對最不熟單字</div>
                                     </div>
                                 </div>
                                 <div className="text-red-300"><Icons.ArrowRight /></div>
@@ -495,10 +495,10 @@
                             
                             <div className="mt-8 pb-8 flex justify-center gap-4">
                                 <button onClick={exportProgress} className="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm active:bg-slate-50">
-                                    <Icons.Download /> 匯出進度
+                                    <Icons.Download /> 匯出
                                 </button>
                                 <label className="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm active:bg-slate-50 cursor-pointer">
-                                    <Icons.Upload /> 匯入進度
+                                    <Icons.Upload /> 匯入
                                     <input type="file" ref={fileInputRef} onChange={importProgress} accept=".json" className="hidden" />
                                 </label>
                                 <button onClick={forceReloadLibrary} className="flex items-center justify-center gap-2 text-xs text-slate-400 font-medium border-b border-slate-300 pb-0.5"><Icons.Refresh /> Reset</button>
@@ -515,7 +515,11 @@
                                     
                                     <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                                         <button onClick={() => { if(currentIndex > 0) { setCurrentIndex(p => p - 1); setActivePosTab(0); } }} disabled={currentIndex === 0} className="p-3 rounded-full bg-white border border-slate-200 text-slate-400 disabled:opacity-30 active:scale-95 transition-transform"><Icons.ArrowLeft /></button>
-                                        <div className="text-center"><h2 className="text-4xl font-extrabold text-slate-900 mb-1 tracking-tight">{currentStudyWord.word}</h2><span className="font-serif italic text-slate-500 text-lg">{currentStudyWord.ipa}</span></div>
+                                        <div className="text-center w-full px-2">
+                                            {/* Responsive Font Size for Word */}
+                                            <h2 className={`${getWordFontSize(currentStudyWord.word)} font-extrabold text-slate-900 mb-1 tracking-tight break-words leading-tight`}>{currentStudyWord.word}</h2>
+                                            <span className="font-serif italic text-slate-500 text-lg block">{currentStudyWord.ipa}</span>
+                                        </div>
                                         <button onClick={() => { if(currentIndex < studyQueue.length - 1) { setCurrentIndex(p => p + 1); setActivePosTab(0); } }} disabled={currentIndex === studyQueue.length - 1} className="p-3 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 disabled:opacity-50 active:scale-95 transition-transform"><Icons.ArrowRight /></button>
                                     </div>
                                     
@@ -525,7 +529,7 @@
                                                 <button key={idx} onClick={() => { setActivePosTab(idx); speak(currentStudyWord.word); }} className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${activePosTab === idx ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}>{m.pos}</button>
                                             ))}
                                         </div>
-                                        <button onClick={toggleFamiliarity} className={`ml-auto mb-2 p-2 rounded-xl flex items-center gap-1 text-xs font-bold transition-all shadow-sm ${currentStudyWord.priority <= 2 ? 'bg-green-100 text-green-700 border border-green-200 ring-2 ring-green-100' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'}`}>
+                                        <button onClick={toggleFamiliarity} className={`ml-auto mb-2 p-2 rounded-xl flex items-center gap-1 text-xs font-bold transition-all shadow-sm shrink-0 ${currentStudyWord.priority <= 2 ? 'bg-green-100 text-green-700 border border-green-200 ring-2 ring-green-100' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'}`}>
                                             {currentStudyWord.priority <= 2 ? <><Icons.Check /> 熟悉</> : <><Icons.Unlock /> 設為熟悉</>}
                                         </button>
                                     </div>
@@ -569,14 +573,7 @@
                     {/* Quiz Mode */}
                     {mode === 'quiz' && (
                         <div className="flex-1 flex flex-col p-5 bg-white overflow-y-auto pb-safe">
-                            {quizFinished ? (
-                                <div className="flex-1 flex flex-col justify-center items-center text-center animate-in zoom-in">
-                                    <div className="text-indigo-600 mb-6 scale-150"><Icons.Trophy /></div>
-                                    <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Quiz Complete!</h2>
-                                    <p className="text-slate-500 mb-10 text-lg">Score: <span className="text-indigo-600 font-bold text-2xl">{quizScore}</span> <span className="text-sm">/ {quizQueue.length}</span></p>
-                                    <button onClick={handleExitMode} className="w-full max-w-xs bg-slate-900 text-white h-14 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform">Back to Dashboard</button>
-                                </div>
-                            ) : quizQueue[currentQuizIndex] ? (
+                            {!quizFinished && quizQueue[currentQuizIndex] ? (
                                 <div className="flex-1 flex flex-col justify-center min-h-[500px]">
                                     <div className="flex justify-between mb-4 font-bold text-slate-400 text-xs uppercase tracking-wider"><span>Q: {currentQuizIndex + 1}/{quizQueue.length}</span><span className="text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Score: {quizScore}</span></div>
                                     <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden relative">
@@ -586,7 +583,6 @@
                                         
                                         <div className="p-8 text-center pt-10">
                                             <div className="mb-6">
-                                                {/* Hidden Chinese Toggle - Clickable Area */}
                                                 <div 
                                                     onClick={() => setShowChineseInQuiz(!showChineseInQuiz)}
                                                     className="cursor-pointer select-none active:scale-[0.98] transition-transform"
@@ -604,7 +600,6 @@
                                                     </div>
                                                 </div>
 
-                                                {/* English Definition - Bigger & Black */}
                                                 <div className="text-3xl text-black font-bold leading-snug mt-6 border-t border-slate-100 pt-6 px-2">
                                                     {quizQueue[currentQuizIndex].meanings[0]?.items[0]?.def_en}
                                                 </div>
@@ -620,12 +615,10 @@
                                             {quizStatus === 'question' ? (
                                                 <form onSubmit={handleSubmitSpelling} className="flex flex-col gap-6">
                                                     <div className="flex items-center justify-center gap-2">
-                                                        {/* POS Label FIRST */}
                                                         <span className="bg-indigo-100 text-indigo-700 px-3 py-4 rounded-xl text-lg font-extrabold uppercase shadow-sm border border-indigo-200 min-w-[3.5rem]">
                                                             {quizQueue[currentQuizIndex].meanings[0]?.pos}
                                                         </span>
                                                         
-                                                        {/* Hint & Input */}
                                                         <div className="relative flex-1 max-w-[220px]">
                                                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-2xl font-bold">{quizQueue[currentQuizIndex].word.charAt(0)}</span>
                                                             <input 
@@ -651,7 +644,12 @@
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex-1 flex items-center justify-center">Loading Question...</div>
+                                <div className="flex-1 flex flex-col justify-center items-center text-center animate-in zoom-in">
+                                    <div className="text-indigo-600 mb-6 scale-150"><Icons.Trophy /></div>
+                                    <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Quiz Complete!</h2>
+                                    <p className="text-slate-500 mb-10 text-lg">Score: <span className="text-indigo-600 font-bold text-2xl">{quizScore}</span> <span className="text-sm">/ {quizQueue.length}</span></p>
+                                    <button onClick={handleExitMode} className="w-full max-w-xs bg-slate-900 text-white h-14 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform">Back to Dashboard</button>
+                                </div>
                             )}
                         </div>
                     )}
