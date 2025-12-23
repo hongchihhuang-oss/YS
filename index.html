@@ -15,8 +15,10 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- 載入資料庫 (請確保檔案都存在於同一目錄) -->
+    <!-- 載入資料庫 -->
+    <script src="vocab.js"></script>
     <script src="vocab_a.js"></script>
+    <script src="vocab_a1.js"></script>
     <script src="vocab_b.js"></script>
     <script src="vocab_c.js"></script>
     <script src="vocab_d.js"></script>
@@ -36,7 +38,7 @@
     <script src="vocab_last.js"></script>
     <script src="vocab_miss.js"></script>
 
-    <!-- 補丁系列 (必須放在最後) -->
+    <!-- 補丁系列 -->
     <script src="vocab_patch1.js"></script>
     <script src="vocab_patch2.js"></script>
     <script src="vocab_patch3.js"></script>
@@ -48,6 +50,11 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
         .smooth-scroll { scroll-behavior: smooth; }
+        
+        /* 避免鍵盤彈出時版面壞掉 */
+        @media (max-height: 500px) {
+            .keyboard-hide { display: none !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-[100dvh] w-full overflow-hidden">
@@ -57,7 +64,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-        // Icons Component
+        // Icons
         const Icons = {
             Book: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
             Edit: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
@@ -73,12 +80,13 @@
             Bulb: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.4 1.5-3.8 0-3.2-2.8-5.7-6-5.7s-6 2.5-6 5.7c0 1.4.5 2.8 1.5 3.8.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>,
             Zap: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
             Target: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
-            ThumbUp: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            ThumbUp: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>,
+            Unlock: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
         };
 
         function App() {
-            // Main Data State
             const [words, setWords] = useState([]);
+            const [studyQueue, setStudyQueue] = useState([]); // 學習模式的隊列
             const [mode, setMode] = useState('dashboard');
             const [loading, setLoading] = useState(true);
             const [currentIndex, setCurrentIndex] = useState(0);
@@ -94,19 +102,16 @@
             const [quizStatus, setQuizStatus] = useState("question");
             const [quizResult, setQuizResult] = useState(null);
             const [showQuizHint, setShowQuizHint] = useState(false);
-            const [quizType, setQuizType] = useState(null); // 'top10', 'weak', 'random'
+            const [quizType, setQuizType] = useState(null);
             
             const inputRef = useRef(null);
             const pendingUpdatesRef = useRef({});
 
-            // 1. 初始化資料
             useEffect(() => {
-                const savedProgress = localStorage.getItem('ielts_progress_v22'); // 更新版本號以防衝突
+                const savedProgress = localStorage.getItem('ielts_progress_v23'); // Version 2.3
                 const savedFontLevel = localStorage.getItem('ielts_font_level');
-                
                 if (savedFontLevel) setFontSizeLevel(parseInt(savedFontLevel, 10));
 
-                // 讀取 window.VOCAB_LIBRARY
                 const library = window.VOCAB_LIBRARY || [];
                 let allWords = [...library];
 
@@ -120,15 +125,10 @@
                     } catch (e) { console.error(e); }
                 }
 
-                // 去重與排序：優先級高的在前面 (Unfamiliar)，優先級低的在後面 (Familiar)
+                // 排序邏輯：優先級由高到低 (10 -> 1)，同優先級按字母排序
                 const uniqueWords = Array.from(new Map(allWords.map(item => [item.id, item])).values());
-                
-                // Priority Definitions:
-                // 10: Unfamiliar / New
-                // 5-9: Learning
-                // 1: Familiar (Mastered) - User manually set or passed Top 10 exam
                 const sortedWords = uniqueWords.sort((a, b) => {
-                    if (b.priority !== a.priority) return b.priority - a.priority; // 降序：10 在前，1 在後
+                    if (b.priority !== a.priority) return b.priority - a.priority;
                     return a.word.localeCompare(b.word);
                 });
                 
@@ -136,19 +136,17 @@
                 setLoading(false);
             }, []);
 
-            // 2. 自動存檔
             useEffect(() => {
                 if (words.length > 0) {
                     const progressMap = {};
                     words.forEach(w => progressMap[w.id] = w.priority);
-                    localStorage.setItem('ielts_progress_v22', JSON.stringify(progressMap));
+                    localStorage.setItem('ielts_progress_v23', JSON.stringify(progressMap));
                 }
             }, [words]);
 
-            // 強制重讀資料庫
             const forceReloadLibrary = () => {
-                if(confirm("確定要重新載入資料庫嗎？\n這將重置所有進度。")) {
-                    localStorage.removeItem('ielts_progress_v22');
+                if(confirm("重置將清除所有學習進度 (包含熟悉/不熟標記)。確定嗎？")) {
+                    localStorage.removeItem('ielts_progress_v23');
                     window.location.reload();
                 }
             };
@@ -157,34 +155,6 @@
                 const newLevel = (fontSizeLevel + 1) % 3;
                 setFontSizeLevel(newLevel);
                 localStorage.setItem('ielts_font_level', newLevel.toString());
-            };
-
-            // Link Function Fix: 跳轉到指定單字
-            const jumpToWord = (targetWord) => {
-                const index = words.findIndex(w => w.word.toLowerCase() === targetWord.toLowerCase());
-                if (index !== -1) {
-                    setCurrentIndex(index);
-                    setActivePosTab(0);
-                    speak(words[index].word);
-                } else {
-                    alert(`Word "${targetWord}" not found in database.`);
-                }
-            };
-
-            // Set Word as Familiar (Mastered)
-            const markAsFamiliar = (e) => {
-                e.stopPropagation();
-                const wordId = words[currentIndex].id;
-                // 更新狀態：將優先級設為 1 (熟悉)
-                // 為了不讓畫面跳動太劇烈，我們先更新狀態，但排序會在下次重整或特定操作後生效
-                setWords(prev => prev.map(w => w.id === wordId ? { ...w, priority: 1 } : w));
-                // 顯示提示
-                // 這裡可以加一個簡單的 Toast，目前先用簡單的變色反饋，或自動跳下一張
-                // 自動跳下一張 (Optional)
-                if (currentIndex < words.length - 1) {
-                    setCurrentIndex(c => c + 1);
-                    setActivePosTab(0);
-                }
             };
 
             const fontSizes = {
@@ -196,9 +166,8 @@
             };
 
             const stats = useMemo(() => ({
-                unfamiliar: words.filter(w => w.priority >= 8).length, // 不熟
-                learning: words.filter(w => w.priority > 2 && w.priority < 8).length, // 學習中
-                familiar: words.filter(w => w.priority <= 2).length, // 熟悉
+                unfamiliar: words.filter(w => w.priority > 2).length, // 不熟 (Priority > 2)
+                familiar: words.filter(w => w.priority <= 2).length,  // 熟悉 (Priority <= 2)
                 total: words.length
             }), [words]);
 
@@ -212,41 +181,82 @@
                 }
             };
 
-            const applyPendingUpdates = useCallback(() => {
-                const updates = { ...pendingUpdatesRef.current };
-                if (Object.keys(updates).length === 0) return;
-                pendingUpdatesRef.current = {};
-                setWords(prev => {
-                    const updated = prev.map(w => {
-                        if (updates[w.id] !== undefined) return { ...w, priority: updates[w.id] };
-                        return w;
-                    });
-                    // Re-sort: Unfamiliar (10) -> Familiar (1)
-                    return updated.sort((a, b) => {
-                        if (b.priority !== a.priority) return b.priority - a.priority;
-                        return a.word.localeCompare(b.word);
-                    });
-                });
-            }, []);
+            // 進入學習模式 (Entry Points)
+            const enterStudyMode = (type) => {
+                let queue = [];
+                if (type === 'unfamiliar') {
+                    // 只選不熟的字
+                    queue = words.filter(w => w.priority > 2);
+                    if (queue.length === 0) { alert("太棒了！您已經沒有不熟的單字了！"); return; }
+                } else if (type === 'familiar') {
+                    // 只選熟悉的字
+                    queue = words.filter(w => w.priority <= 2);
+                    if (queue.length === 0) { alert("您還沒有標記任何熟悉的單字。"); return; }
+                }
+                
+                setStudyQueue(queue);
+                setCurrentIndex(0);
+                setActivePosTab(0);
+                setMode('study');
+            };
+
+            // 切換單字熟悉狀態
+            const toggleFamiliarity = (e) => {
+                e.stopPropagation();
+                const currentWord = studyQueue[currentIndex];
+                const newPriority = currentWord.priority <= 2 ? 10 : 1; // 切換：熟(1) <-> 不熟(10)
+                
+                // 更新主列表 words
+                setWords(prev => prev.map(w => w.id === currentWord.id ? { ...w, priority: newPriority } : w));
+                
+                // 更新當前學習隊列 (讓 UI 即時反應)
+                setStudyQueue(prev => prev.map((w, idx) => idx === currentIndex ? { ...w, priority: newPriority } : w));
+            };
+
+            const jumpToWord = (targetWord) => {
+                // 在當前 studyQueue 中搜尋
+                const index = studyQueue.findIndex(w => w.word.toLowerCase() === targetWord.toLowerCase());
+                if (index !== -1) {
+                    setCurrentIndex(index);
+                    setActivePosTab(0);
+                    speak(studyQueue[index].word);
+                } else {
+                    // 如果不在當前隊列，試著在全庫搜尋並提示
+                    const globalIndex = words.findIndex(w => w.word.toLowerCase() === targetWord.toLowerCase());
+                    if (globalIndex !== -1) {
+                        alert(`單字 "${targetWord}" 存在，但不在目前的學習列表中。`);
+                    } else {
+                        alert(`找不到單字: "${targetWord}"`);
+                    }
+                }
+            };
 
             const handleExitMode = () => {
-                if (mode === 'quiz') applyPendingUpdates();
+                if (mode === 'quiz') {
+                    // Apply pending updates from quiz
+                    const updates = { ...pendingUpdatesRef.current };
+                    if (Object.keys(updates).length > 0) {
+                        setWords(prev => prev.map(w => updates[w.id] !== undefined ? { ...w, priority: updates[w.id] } : w));
+                        pendingUpdatesRef.current = {};
+                    }
+                }
+                // 重新排序主列表以確保 Dashboard 數據正確
+                setWords(prev => [...prev].sort((a, b) => {
+                    if (b.priority !== a.priority) return b.priority - a.priority;
+                    return a.word.localeCompare(b.word);
+                }));
                 setMode('dashboard');
             };
 
-            // Auto-Play
+            // Auto-Play in Study Mode
             useEffect(() => {
-                if (mode === 'study' && words[currentIndex]) {
-                    const currentWord = words[currentIndex];
+                if (mode === 'study' && studyQueue[currentIndex]) {
+                    const currentWord = studyQueue[currentIndex];
                     speak(currentWord.word);
-                    const timer = setTimeout(() => {
-                        if(currentWord.meanings[activePosTab]?.items[0]?.sentence) {
-                            speak(currentWord.meanings[activePosTab].items[0].sentence);
-                        }
-                    }, 1200);
-                    return () => clearTimeout(timer);
+                    // 切換單字後，確保分頁回到第一個 (但保留手動切換的自由度，這裡只在 index 變動時重置)
+                    // (ActivePosTab logic is handled in next/prev buttons)
                 }
-            }, [currentIndex, mode, activePosTab, words]);
+            }, [currentIndex, mode]); // removed activePosTab from deps to prevent re-reading on tab switch
 
             const highlightSentence = (sentence, word) => {
                 if (!sentence || !word) return sentence;
@@ -264,52 +274,25 @@
                 return sentence.replace(regex, '_______');
             };
 
-            // --- New Quiz Logic ---
-
-            // 1. Top 10 Challenge (攻克前十)
-            const startTop10Quiz = () => {
-                // 取目前排序最前面的 10 個字 (通常是最不熟的)
-                // 排除已經標記為熟悉 (priority <= 2) 的字，雖然排序會把熟悉的放後面，但以防萬一
-                const targetWords = words.filter(w => w.priority > 2).slice(0, 10);
-                
-                if (targetWords.length === 0) {
-                    alert("太棒了！您已經沒有「不熟」的單字了！");
-                    return;
+            // --- Quiz Logic ---
+            const startQuiz = (type) => {
+                let queue = [];
+                if (type === 'top10') {
+                    // 考最前面 10 個不熟的
+                    queue = words.filter(w => w.priority > 2).slice(0, 10);
+                    if (queue.length === 0) { alert("恭喜！沒有不熟的單字了！"); return; }
+                } else if (type === 'weak') {
+                    // 隨機考不熟的
+                    const weakPool = words.filter(w => w.priority > 2);
+                    queue = [...weakPool].sort(() => Math.random() - 0.5).slice(0, 10);
+                    if (queue.length === 0) { alert("沒有不熟的單字可考！"); return; }
+                } else if (type === 'random') {
+                    // 全範圍隨機
+                    queue = [...words].sort(() => Math.random() - 0.5).slice(0, 10);
                 }
 
-                setQuizQueue(targetWords);
-                setQuizType('top10');
-                initQuiz();
-            };
-
-            // 2. Random Weak (弱點擊破)
-            const startWeakQuiz = () => {
-                // 篩選 priority >= 7 的字
-                const weakWords = words.filter(w => w.priority >= 7);
-                if (weakWords.length < 5) {
-                    alert("您的弱點單字不足，將自動切換為隨機測驗！");
-                    startRandomQuiz();
-                    return;
-                }
-                const queue = [...weakWords].sort(() => Math.random() - 0.5).slice(0, 10);
                 setQuizQueue(queue);
-                setQuizType('weak');
-                initQuiz();
-            };
-
-            // 3. Random All (隨機測驗)
-            const startRandomQuiz = () => {
-                // 排除已熟悉 (priority <= 2) 的單字，除非字數太少
-                let pool = words.filter(w => w.priority > 2);
-                if (pool.length < 10) pool = words; // 如果剩下的字太少，就全部考
-
-                const queue = [...pool].sort(() => Math.random() - 0.5).slice(0, 10);
-                setQuizQueue(queue);
-                setQuizType('random');
-                initQuiz();
-            };
-
-            const initQuiz = () => {
+                setQuizType(type);
                 setCurrentQuizIndex(0); setQuizScore(0); setQuizFinished(false); 
                 setQuizStatus("question"); setUserInput(""); setShowQuizHint(false);
                 pendingUpdatesRef.current = {}; 
@@ -332,18 +315,13 @@
                 if (isCorrect) {
                     setQuizScore(prev => prev + 1);
                     speak("Correct");
-                    
-                    // 特殊計分邏輯
                     if (quizType === 'top10') {
-                        // 攻克前十：答對直接變熟悉 (Priority 1)
-                        newPriority = 1; 
+                        newPriority = 1; // Top 10 考過直接變熟悉
                     } else {
-                        // 一般測驗：稍微降低權重
-                        newPriority = Math.max(3, newPriority - 2);
+                        newPriority = Math.max(1, newPriority - 3);
                     }
                 } else {
-                    // 答錯：變回最不熟 (Priority 10)
-                    newPriority = 10; 
+                    newPriority = 10; // 錯了變最不熟
                     speak(qWord.word);
                 }
                 pendingUpdatesRef.current[qWord.id] = newPriority;
@@ -358,19 +336,18 @@
                     setShowQuizHint(false);
                 } else {
                     setQuizFinished(true);
-                    applyPendingUpdates();
                 }
             };
 
-            useEffect(() => {
-                if (mode === 'quiz' && quizStatus === 'question' && inputRef.current) {
-                    setTimeout(() => inputRef.current.focus(), 100);
-                }
-            }, [mode, quizStatus, currentQuizIndex]);
+            // Keyboard Focus Logic (Only focus when intended, initially blur)
+            // User requested: "Only appear when user taps" -> We don't auto focus on mobile
+            // But for desktop experience, auto-focus is nice. 
+            // We can check screen width or just disable auto focus globally as requested.
+            // Removed auto focus useEffect.
 
             if (loading) return <div className="flex h-screen items-center justify-center text-indigo-600 font-bold">Loading...</div>;
 
-            const currentWord = words[currentIndex];
+            const currentStudyWord = studyQueue[currentIndex];
 
             return (
                 <div className="flex flex-col h-full bg-slate-50 font-sans max-w-md mx-auto shadow-2xl overflow-hidden">
@@ -384,40 +361,42 @@
                         <div className="flex items-center gap-3">
                             {mode === 'study' && (
                                 <>
-                                    <button onClick={() => speak(currentWord.word)} className="p-2 rounded-lg bg-indigo-50 text-indigo-600 active:bg-indigo-100 transition-colors"><Icons.Speaker /></button>
+                                    <button onClick={() => speak(currentStudyWord.word)} className="p-2 rounded-lg bg-indigo-50 text-indigo-600 active:bg-indigo-100 transition-colors"><Icons.Speaker /></button>
                                     <button onClick={toggleFontSize} className={`p-2 rounded-lg transition-colors flex items-center justify-center w-10 ${fontSizeLevel > 0 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
                                         <Icons.Type />{fontSizeLevel > 0 && <span className="text-[10px] ml-1 font-bold">{fontSizeLevel === 1 ? 'L' : 'XL'}</span>}
                                     </button>
                                 </>
                             )}
-                            <div className="flex gap-2 text-[10px] font-bold">
-                                <span className="text-amber-700 bg-amber-100 px-2 py-1 rounded border border-amber-200">{stats.unfamiliar} 不熟</span>
-                            </div>
                         </div>
                     </div>
 
                     {/* Dashboard */}
                     {mode === 'dashboard' && (
                         <div className="flex-1 p-5 overflow-y-auto space-y-4 smooth-scroll">
-                            {/* Stats Card */}
-                            <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 mb-4">
+                            {/* Stats & Entry Points */}
+                            <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 mb-6">
                                 <div className="flex justify-between items-start mb-2"><div className="text-xs font-bold text-indigo-200 tracking-widest opacity-80">DATABASE</div><Icons.Database /></div>
-                                <div className="text-5xl font-extrabold mb-4 tracking-tight">{stats.total}<span className="text-sm font-medium ml-2 text-indigo-200">words</span></div>
-                                <div className="flex gap-2">
-                                    <div className="flex-1 bg-white/10 rounded-xl p-3 text-center border border-white/10 backdrop-blur-sm"><div className="font-bold text-2xl">{stats.unfamiliar}</div><div className="text-[10px] uppercase opacity-80 font-bold">Unfamiliar</div></div>
-                                    <div className="flex-1 bg-white/10 rounded-xl p-3 text-center border border-white/10 backdrop-blur-sm"><div className="font-bold text-2xl">{stats.familiar}</div><div className="text-[10px] uppercase opacity-80 font-bold">Familiar</div></div>
+                                <div className="text-5xl font-extrabold mb-6 tracking-tight">{stats.total}<span className="text-sm font-medium ml-2 text-indigo-200">words</span></div>
+                                
+                                <div className="grid grid-cols-2 gap-3">
+                                    {/* Unfamiliar Entry */}
+                                    <button onClick={() => enterStudyMode('unfamiliar')} className="bg-white/10 rounded-xl p-4 text-center border border-white/10 backdrop-blur-sm active:bg-white/20 transition-all group">
+                                        <div className="font-bold text-3xl mb-1 group-hover:scale-110 transition-transform">{stats.unfamiliar}</div>
+                                        <div className="text-[10px] uppercase opacity-80 font-bold bg-red-500/20 px-2 py-1 rounded-full inline-block">不熟 (Start)</div>
+                                    </button>
+                                    
+                                    {/* Familiar Entry */}
+                                    <button onClick={() => enterStudyMode('familiar')} className="bg-white/10 rounded-xl p-4 text-center border border-white/10 backdrop-blur-sm active:bg-white/20 transition-all group">
+                                        <div className="font-bold text-3xl mb-1 group-hover:scale-110 transition-transform">{stats.familiar}</div>
+                                        <div className="text-[10px] uppercase opacity-80 font-bold bg-green-500/20 px-2 py-1 rounded-full inline-block">熟悉 (Review)</div>
+                                    </button>
                                 </div>
                             </div>
 
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2">Study</div>
-                            <button onClick={() => { setMode('study'); setCurrentIndex(0); }} className="w-full bg-white p-5 rounded-3xl border border-slate-100 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group mb-6">
-                                <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner"><Icons.Book /></div><div className="text-left"><div className="text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">開始學習</div><div className="text-sm text-slate-500 font-medium">不熟單字優先排序</div></div></div><div className="text-slate-300"><Icons.ArrowRight /></div>
-                            </button>
-
                             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2">Quiz Modes</div>
                             
-                            {/* Quiz Type 1: Top 10 Challenge */}
-                            <button onClick={startTop10Quiz} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-red-500 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
+                            {/* Quiz: Top 10 */}
+                            <button onClick={() => startQuiz('top10')} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-red-500 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 shadow-inner"><Icons.Target /></div>
                                     <div className="text-left">
@@ -428,8 +407,8 @@
                                 <div className="text-red-300"><Icons.ArrowRight /></div>
                             </button>
 
-                            {/* Quiz Type 2: Weak Words */}
-                            <button onClick={startWeakQuiz} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-amber-400 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
+                            {/* Quiz: Weak */}
+                            <button onClick={() => startQuiz('weak')} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-amber-400 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner"><Icons.Zap /></div>
                                     <div className="text-left">
@@ -440,8 +419,8 @@
                                 <div className="text-amber-300"><Icons.ArrowRight /></div>
                             </button>
 
-                            {/* Quiz Type 3: Random */}
-                            <button onClick={startRandomQuiz} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-teal-400 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
+                            {/* Quiz: Random */}
+                            <button onClick={() => startQuiz('random')} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-teal-400 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 shadow-inner"><Icons.Edit /></div>
                                     <div className="text-left">
@@ -459,42 +438,42 @@
                     )}
 
                     {/* Study Mode */}
-                    {mode === 'study' && currentWord && (
+                    {mode === 'study' && currentStudyWord && (
                         <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden relative">
                             <div className="flex-1 px-4 overflow-y-auto py-4 scrollbar-hide pb-10 smooth-scroll">
-                                <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden relative">
-                                    {/* Priority Bar */}
-                                    <div className={`h-1.5 w-full ${currentWord.priority <= 2 ? 'bg-green-500' : currentWord.priority >= 8 ? 'bg-red-500' : 'bg-amber-400'}`}></div>
+                                <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden relative min-h-[400px]">
+                                    {/* Priority Indicator Bar */}
+                                    <div className={`h-1.5 w-full ${currentStudyWord.priority <= 2 ? 'bg-green-500' : 'bg-red-500'}`}></div>
                                     
                                     <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                                         <button onClick={() => { if(currentIndex > 0) { setCurrentIndex(p => p - 1); setActivePosTab(0); } }} disabled={currentIndex === 0} className="p-3 rounded-full bg-white border border-slate-200 text-slate-400 disabled:opacity-30 active:scale-95 transition-transform"><Icons.ArrowLeft /></button>
-                                        <div className="text-center"><h2 className="text-4xl font-extrabold text-slate-900 mb-1 tracking-tight">{currentWord.word}</h2><span className="font-serif italic text-slate-500 text-lg">{currentWord.ipa}</span></div>
-                                        <button onClick={() => { if(currentIndex < words.length - 1) { setCurrentIndex(p => p + 1); setActivePosTab(0); } }} disabled={currentIndex === words.length - 1} className="p-3 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 disabled:opacity-50 active:scale-95 transition-transform"><Icons.ArrowRight /></button>
+                                        <div className="text-center"><h2 className="text-4xl font-extrabold text-slate-900 mb-1 tracking-tight">{currentStudyWord.word}</h2><span className="font-serif italic text-slate-500 text-lg">{currentStudyWord.ipa}</span></div>
+                                        <button onClick={() => { if(currentIndex < studyQueue.length - 1) { setCurrentIndex(p => p + 1); setActivePosTab(0); } }} disabled={currentIndex === studyQueue.length - 1} className="p-3 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 disabled:opacity-50 active:scale-95 transition-transform"><Icons.ArrowRight /></button>
                                     </div>
                                     
                                     {/* POS Tabs + Familiar Button */}
                                     <div className="flex items-center border-b border-slate-100 bg-white sticky top-0 z-10 pt-2 px-2 gap-2 overflow-x-auto scrollbar-hide">
                                         <div className="flex-1 flex justify-center gap-2">
-                                            {currentWord.meanings.map((m, idx) => (
-                                                <button key={idx} onClick={() => { setActivePosTab(idx); speak(currentWord.word); }} className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${activePosTab === idx ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}>{m.pos}</button>
+                                            {currentStudyWord.meanings.map((m, idx) => (
+                                                <button key={idx} onClick={() => { setActivePosTab(idx); speak(currentStudyWord.word); }} className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${activePosTab === idx ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}>{m.pos}</button>
                                             ))}
                                         </div>
-                                        <button onClick={markAsFamiliar} className={`ml-auto mb-2 p-2 rounded-xl flex items-center gap-1 text-xs font-bold transition-colors shadow-sm ${currentWord.priority <= 2 ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-green-50 hover:text-green-600'}`}>
-                                            <Icons.ThumbUp /> {currentWord.priority <= 2 ? '熟悉' : '設為熟悉'}
+                                        {/* Toggle Familiarity Button */}
+                                        <button onClick={toggleFamiliarity} className={`ml-auto mb-2 p-2 rounded-xl flex items-center gap-1 text-xs font-bold transition-all shadow-sm ${currentStudyWord.priority <= 2 ? 'bg-green-100 text-green-700 border border-green-200 ring-2 ring-green-100' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'}`}>
+                                            {currentStudyWord.priority <= 2 ? <><Icons.Check /> 熟悉</> : <><Icons.Unlock /> 設為熟悉</>}
                                         </button>
                                     </div>
 
-                                    <div className="p-6 space-y-6 min-h-[300px]">
-                                        {currentWord.meanings[activePosTab] && currentWord.meanings[activePosTab].items.map((item, i) => (
+                                    <div className="p-6 space-y-6">
+                                        {currentStudyWord.meanings[activePosTab] && currentStudyWord.meanings[activePosTab].items.map((item, i) => (
                                             <div key={i} className="pl-4 border-l-4 border-indigo-100 animate-in fade-in slide-in-from-right-4 duration-300">
                                                 <div className={`font-bold text-slate-800 mb-2 ${fontSizes.def_zh[fontSizeLevel]}`}>{item.def_zh}</div>
                                                 <div className={`text-slate-500 mb-5 font-medium leading-relaxed ${fontSizes.def_en[fontSizeLevel]}`}>{item.def_en}</div>
                                                 
-                                                {/* Synonyms with Links */}
                                                 {(item.synonyms || item.phrases) && (
                                                     <div className="mb-5 flex flex-col gap-3">
                                                         {item.synonyms && item.synonyms.length > 0 && <div className="flex flex-wrap gap-2 items-center"><span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded">Synonyms</span>{item.synonyms.map((syn, si) => { 
-                                                            const targetIndex = words.findIndex(w => w.word.toLowerCase() === syn.toLowerCase()); 
+                                                            const targetIndex = studyQueue.findIndex(w => w.word.toLowerCase() === syn.toLowerCase()); 
                                                             const isLink = targetIndex !== -1; 
                                                             return (
                                                                 <span key={si} 
@@ -510,7 +489,7 @@
                                                 )}
 
                                                 <div onClick={() => speak(item.sentence)} className="bg-slate-50 p-5 rounded-2xl border border-slate-100 cursor-pointer active:scale-[0.98] active:bg-indigo-50 transition-all group">
-                                                    <p className={`text-slate-700 italic mb-3 font-serif leading-relaxed ${fontSizes.sentence[fontSizeLevel]}`}>"{highlightSentence(item.sentence, currentWord.word)}"</p>
+                                                    <p className={`text-slate-700 italic mb-3 font-serif leading-relaxed ${fontSizes.sentence[fontSizeLevel]}`}>"{highlightSentence(item.sentence, currentStudyWord.word)}"</p>
                                                     <div className="flex justify-between items-end"><p className={`text-slate-400 font-medium ${fontSizes.trans[fontSizeLevel]}`}>{item.sentence_trans}</p><span className="text-indigo-300 opacity-50 group-hover:opacity-100 transition-opacity"><Icons.Speaker /></span></div>
                                                 </div>
                                             </div>
@@ -532,20 +511,40 @@
                                             {quizType === 'top10' ? 'TOP 10 CHALLENGE' : quizType === 'weak' ? 'WEAK WORDS' : 'RANDOM QUIZ'}
                                         </div>
                                         <div className="p-8 text-center">
+                                            {/* Quiz Hint (POS + Definition) */}
                                             <div className="mb-6">
-                                                <div className="text-3xl font-extrabold text-slate-800 mb-2 leading-tight">{quizQueue[currentQuizIndex].meanings[0].items[0].def_zh}</div>
-                                                <div className="text-xl text-slate-600 font-medium leading-relaxed">{quizQueue[currentQuizIndex].meanings[0].items[0].def_en}</div>
+                                                <div className="inline-block bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold uppercase mb-2">
+                                                    {quizQueue[currentQuizIndex].meanings[0].pos}
+                                                </div>
+                                                <div className="text-3xl font-extrabold text-slate-800 mb-2 leading-tight">
+                                                    {quizQueue[currentQuizIndex].meanings[0].items[0].def_zh}
+                                                </div>
+                                                {/* Darker text for visibility */}
+                                                <div className="text-xl text-slate-800 font-bold leading-relaxed opacity-90">
+                                                    {quizQueue[currentQuizIndex].meanings[0].items[0].def_en}
+                                                </div>
                                             </div>
+                                            
                                             <div className="flex justify-center gap-3 mb-8">
                                                 <button onClick={() => speak(quizQueue[currentQuizIndex].word)} className="p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors" title="Listen"><Icons.Speaker /></button>
                                                 <button onClick={() => setShowQuizHint(!showQuizHint)} className={`p-2 rounded-full transition-colors ${showQuizHint ? 'bg-yellow-100 text-yellow-600' : 'bg-slate-100 text-slate-600'}`} title="Show Example"><Icons.Bulb /></button>
                                             </div>
+                                            
                                             {showQuizHint && <div className="mb-6 p-3 bg-yellow-50 border border-yellow-100 rounded-xl animate-in fade-in zoom-in duration-300"><p className="text-base text-slate-700 italic font-serif">"{getMaskedSentence(quizQueue[currentQuizIndex].meanings[0].items[0].sentence, quizQueue[currentQuizIndex].word)}"</p></div>}
+                                            
                                             {quizStatus === 'question' ? (
                                                 <form onSubmit={handleSubmitSpelling} className="flex flex-col gap-6">
                                                     <div className="relative">
                                                         <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-2xl font-bold">{quizQueue[currentQuizIndex].word.charAt(0)}</span>
-                                                        <input ref={inputRef} autoFocus value={userInput} onChange={e => setUserInput(e.target.value)} className="w-full h-16 pl-12 pr-4 text-center text-2xl font-bold border-2 border-slate-200 rounded-2xl focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 outline-none uppercase bg-slate-50 tracking-wide" placeholder="_ _ _ _" autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck="false" />
+                                                        {/* Input: no autoFocus on mobile to prevent keyboard popup covering info */}
+                                                        <input 
+                                                            ref={inputRef}
+                                                            value={userInput} 
+                                                            onChange={e => setUserInput(e.target.value)} 
+                                                            className="w-full h-16 pl-12 pr-4 text-center text-2xl font-bold border-2 border-slate-200 rounded-2xl focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 outline-none uppercase bg-slate-50 tracking-wide" 
+                                                            placeholder="Tap to answer" 
+                                                            autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck="false" 
+                                                        />
                                                     </div>
                                                     <button type="submit" className="w-full bg-indigo-600 text-white h-14 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-200 active:scale-95 transition-transform">Check Answer</button>
                                                 </form>
