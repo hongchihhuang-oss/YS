@@ -50,11 +50,6 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
         .smooth-scroll { scroll-behavior: smooth; }
-        
-        /* 避免鍵盤彈出時版面壞掉 */
-        @media (max-height: 500px) {
-            .keyboard-hide { display: none !important; }
-        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-[100dvh] w-full overflow-hidden">
@@ -81,17 +76,22 @@
             Zap: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
             Target: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
             ThumbUp: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>,
-            Unlock: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+            Unlock: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>,
+            Eye: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+            EyeOff: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+            Volume2: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>,
+            VolumeX: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
         };
 
         function App() {
             const [words, setWords] = useState([]);
-            const [studyQueue, setStudyQueue] = useState([]); // 學習模式的隊列
+            const [studyQueue, setStudyQueue] = useState([]);
             const [mode, setMode] = useState('dashboard');
             const [loading, setLoading] = useState(true);
             const [currentIndex, setCurrentIndex] = useState(0);
             const [activePosTab, setActivePosTab] = useState(0);
             const [fontSizeLevel, setFontSizeLevel] = useState(0);
+            const [autoPlay, setAutoPlay] = useState(true); // New: Auto-play Audio Setting
             
             // Quiz State
             const [quizQueue, setQuizQueue] = useState([]);
@@ -103,14 +103,18 @@
             const [quizResult, setQuizResult] = useState(null);
             const [showQuizHint, setShowQuizHint] = useState(false);
             const [quizType, setQuizType] = useState(null);
+            const [showChineseInQuiz, setShowChineseInQuiz] = useState(false); // New: Hide Chinese by default
             
             const inputRef = useRef(null);
             const pendingUpdatesRef = useRef({});
 
             useEffect(() => {
-                const savedProgress = localStorage.getItem('ielts_progress_v23'); // Version 2.3
+                const savedProgress = localStorage.getItem('ielts_progress_v24'); 
                 const savedFontLevel = localStorage.getItem('ielts_font_level');
+                const savedAutoPlay = localStorage.getItem('ielts_autoplay');
+                
                 if (savedFontLevel) setFontSizeLevel(parseInt(savedFontLevel, 10));
+                if (savedAutoPlay !== null) setAutoPlay(savedAutoPlay === 'true');
 
                 const library = window.VOCAB_LIBRARY || [];
                 let allWords = [...library];
@@ -140,13 +144,13 @@
                 if (words.length > 0) {
                     const progressMap = {};
                     words.forEach(w => progressMap[w.id] = w.priority);
-                    localStorage.setItem('ielts_progress_v23', JSON.stringify(progressMap));
+                    localStorage.setItem('ielts_progress_v24', JSON.stringify(progressMap));
                 }
             }, [words]);
 
             const forceReloadLibrary = () => {
                 if(confirm("重置將清除所有學習進度 (包含熟悉/不熟標記)。確定嗎？")) {
-                    localStorage.removeItem('ielts_progress_v23');
+                    localStorage.removeItem('ielts_progress_v24');
                     window.location.reload();
                 }
             };
@@ -155,6 +159,12 @@
                 const newLevel = (fontSizeLevel + 1) % 3;
                 setFontSizeLevel(newLevel);
                 localStorage.setItem('ielts_font_level', newLevel.toString());
+            };
+
+            const toggleAutoPlay = () => {
+                const newState = !autoPlay;
+                setAutoPlay(newState);
+                localStorage.setItem('ielts_autoplay', newState);
             };
 
             const fontSizes = {
@@ -166,8 +176,8 @@
             };
 
             const stats = useMemo(() => ({
-                unfamiliar: words.filter(w => w.priority > 2).length, // 不熟 (Priority > 2)
-                familiar: words.filter(w => w.priority <= 2).length,  // 熟悉 (Priority <= 2)
+                unfamiliar: words.filter(w => w.priority > 2).length, 
+                familiar: words.filter(w => w.priority <= 2).length,
                 total: words.length
             }), [words]);
 
@@ -181,15 +191,12 @@
                 }
             };
 
-            // 進入學習模式 (Entry Points)
             const enterStudyMode = (type) => {
                 let queue = [];
                 if (type === 'unfamiliar') {
-                    // 只選不熟的字
                     queue = words.filter(w => w.priority > 2);
                     if (queue.length === 0) { alert("太棒了！您已經沒有不熟的單字了！"); return; }
                 } else if (type === 'familiar') {
-                    // 只選熟悉的字
                     queue = words.filter(w => w.priority <= 2);
                     if (queue.length === 0) { alert("您還沒有標記任何熟悉的單字。"); return; }
                 }
@@ -200,28 +207,21 @@
                 setMode('study');
             };
 
-            // 切換單字熟悉狀態
             const toggleFamiliarity = (e) => {
                 e.stopPropagation();
                 const currentWord = studyQueue[currentIndex];
-                const newPriority = currentWord.priority <= 2 ? 10 : 1; // 切換：熟(1) <-> 不熟(10)
-                
-                // 更新主列表 words
+                const newPriority = currentWord.priority <= 2 ? 10 : 1; 
                 setWords(prev => prev.map(w => w.id === currentWord.id ? { ...w, priority: newPriority } : w));
-                
-                // 更新當前學習隊列 (讓 UI 即時反應)
                 setStudyQueue(prev => prev.map((w, idx) => idx === currentIndex ? { ...w, priority: newPriority } : w));
             };
 
             const jumpToWord = (targetWord) => {
-                // 在當前 studyQueue 中搜尋
                 const index = studyQueue.findIndex(w => w.word.toLowerCase() === targetWord.toLowerCase());
                 if (index !== -1) {
                     setCurrentIndex(index);
                     setActivePosTab(0);
                     speak(studyQueue[index].word);
                 } else {
-                    // 如果不在當前隊列，試著在全庫搜尋並提示
                     const globalIndex = words.findIndex(w => w.word.toLowerCase() === targetWord.toLowerCase());
                     if (globalIndex !== -1) {
                         alert(`單字 "${targetWord}" 存在，但不在目前的學習列表中。`);
@@ -231,32 +231,41 @@
                 }
             };
 
+            // Exit logic - Merged update and sort to ensure random errors move to front
             const handleExitMode = () => {
                 if (mode === 'quiz') {
-                    // Apply pending updates from quiz
-                    const updates = { ...pendingUpdatesRef.current };
-                    if (Object.keys(updates).length > 0) {
-                        setWords(prev => prev.map(w => updates[w.id] !== undefined ? { ...w, priority: updates[w.id] } : w));
+                    setWords(prev => {
+                        let nextWords = [...prev];
+                        // Apply updates
+                        const updates = pendingUpdatesRef.current;
+                        if (Object.keys(updates).length > 0) {
+                            nextWords = nextWords.map(w => updates[w.id] !== undefined ? { ...w, priority: updates[w.id] } : w);
+                        }
                         pendingUpdatesRef.current = {};
-                    }
+                        
+                        // Sort immediately so errors (priority 10) move to top
+                        return nextWords.sort((a, b) => {
+                            if (b.priority !== a.priority) return b.priority - a.priority;
+                            return a.word.localeCompare(b.word);
+                        });
+                    });
                 }
-                // 重新排序主列表以確保 Dashboard 數據正確
-                setWords(prev => [...prev].sort((a, b) => {
-                    if (b.priority !== a.priority) return b.priority - a.priority;
-                    return a.word.localeCompare(b.word);
-                }));
                 setMode('dashboard');
             };
 
             // Auto-Play in Study Mode
             useEffect(() => {
-                if (mode === 'study' && studyQueue[currentIndex]) {
+                if (mode === 'study' && autoPlay && studyQueue[currentIndex]) {
                     const currentWord = studyQueue[currentIndex];
                     speak(currentWord.word);
-                    // 切換單字後，確保分頁回到第一個 (但保留手動切換的自由度，這裡只在 index 變動時重置)
-                    // (ActivePosTab logic is handled in next/prev buttons)
+                    const timer = setTimeout(() => {
+                        if(currentWord.meanings[activePosTab]?.items[0]?.sentence) {
+                            speak(currentWord.meanings[activePosTab].items[0].sentence);
+                        }
+                    }, 1200);
+                    return () => clearTimeout(timer);
                 }
-            }, [currentIndex, mode]); // removed activePosTab from deps to prevent re-reading on tab switch
+            }, [currentIndex, mode]); 
 
             const highlightSentence = (sentence, word) => {
                 if (!sentence || !word) return sentence;
@@ -278,16 +287,13 @@
             const startQuiz = (type) => {
                 let queue = [];
                 if (type === 'top10') {
-                    // 考最前面 10 個不熟的
                     queue = words.filter(w => w.priority > 2).slice(0, 10);
                     if (queue.length === 0) { alert("恭喜！沒有不熟的單字了！"); return; }
                 } else if (type === 'weak') {
-                    // 隨機考不熟的
                     const weakPool = words.filter(w => w.priority > 2);
                     queue = [...weakPool].sort(() => Math.random() - 0.5).slice(0, 10);
                     if (queue.length === 0) { alert("沒有不熟的單字可考！"); return; }
                 } else if (type === 'random') {
-                    // 全範圍隨機
                     queue = [...words].sort(() => Math.random() - 0.5).slice(0, 10);
                 }
 
@@ -295,6 +301,7 @@
                 setQuizType(type);
                 setCurrentQuizIndex(0); setQuizScore(0); setQuizFinished(false); 
                 setQuizStatus("question"); setUserInput(""); setShowQuizHint(false);
+                setShowChineseInQuiz(false); // Reset to hidden by default
                 pendingUpdatesRef.current = {}; 
                 setMode('quiz');
             };
@@ -314,14 +321,14 @@
                 let newPriority = qWord.priority;
                 if (isCorrect) {
                     setQuizScore(prev => prev + 1);
-                    speak("Correct");
+                    speak(qWord.word); // Speak the word itself on success
                     if (quizType === 'top10') {
-                        newPriority = 1; // Top 10 考過直接變熟悉
+                        newPriority = 1; 
                     } else {
                         newPriority = Math.max(1, newPriority - 3);
                     }
                 } else {
-                    newPriority = 10; // 錯了變最不熟
+                    newPriority = 10; 
                     speak(qWord.word);
                 }
                 pendingUpdatesRef.current[qWord.id] = newPriority;
@@ -334,16 +341,11 @@
                     setUserInput("");
                     setQuizResult(null);
                     setShowQuizHint(false);
+                    setShowChineseInQuiz(false); // Hide Chinese again for next question
                 } else {
                     setQuizFinished(true);
                 }
             };
-
-            // Keyboard Focus Logic (Only focus when intended, initially blur)
-            // User requested: "Only appear when user taps" -> We don't auto focus on mobile
-            // But for desktop experience, auto-focus is nice. 
-            // We can check screen width or just disable auto focus globally as requested.
-            // Removed auto focus useEffect.
 
             if (loading) return <div className="flex h-screen items-center justify-center text-indigo-600 font-bold">Loading...</div>;
 
@@ -379,13 +381,11 @@
                                 <div className="text-5xl font-extrabold mb-6 tracking-tight">{stats.total}<span className="text-sm font-medium ml-2 text-indigo-200">words</span></div>
                                 
                                 <div className="grid grid-cols-2 gap-3">
-                                    {/* Unfamiliar Entry */}
                                     <button onClick={() => enterStudyMode('unfamiliar')} className="bg-white/10 rounded-xl p-4 text-center border border-white/10 backdrop-blur-sm active:bg-white/20 transition-all group">
                                         <div className="font-bold text-3xl mb-1 group-hover:scale-110 transition-transform">{stats.unfamiliar}</div>
                                         <div className="text-[10px] uppercase opacity-80 font-bold bg-red-500/20 px-2 py-1 rounded-full inline-block">不熟 (Start)</div>
                                     </button>
                                     
-                                    {/* Familiar Entry */}
                                     <button onClick={() => enterStudyMode('familiar')} className="bg-white/10 rounded-xl p-4 text-center border border-white/10 backdrop-blur-sm active:bg-white/20 transition-all group">
                                         <div className="font-bold text-3xl mb-1 group-hover:scale-110 transition-transform">{stats.familiar}</div>
                                         <div className="text-[10px] uppercase opacity-80 font-bold bg-green-500/20 px-2 py-1 rounded-full inline-block">熟悉 (Review)</div>
@@ -393,21 +393,33 @@
                                 </div>
                             </div>
 
+                            {/* Auto Play Setting Toggle */}
+                            <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg ${autoPlay ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
+                                        {autoPlay ? <Icons.Volume2 /> : <Icons.VolumeX />}
+                                    </div>
+                                    <div className="text-sm font-bold text-slate-700">自動發音</div>
+                                </div>
+                                <button onClick={toggleAutoPlay} className={`w-12 h-7 rounded-full p-1 transition-colors duration-300 ${autoPlay ? 'bg-indigo-600' : 'bg-slate-300'}`}>
+                                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${autoPlay ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                                </button>
+                            </div>
+
                             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2">Quiz Modes</div>
                             
-                            {/* Quiz: Top 10 */}
+                            {/* Quiz Buttons */}
                             <button onClick={() => startQuiz('top10')} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-red-500 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 shadow-inner"><Icons.Target /></div>
                                     <div className="text-left">
                                         <div className="text-lg font-bold text-slate-800 group-hover:text-red-600 transition-colors">🔥 攻克前十</div>
-                                        <div className="text-sm text-slate-500 font-medium">考過即標記為熟悉，不再出現</div>
+                                        <div className="text-sm text-slate-500 font-medium">考過即標記為熟悉</div>
                                     </div>
                                 </div>
                                 <div className="text-red-300"><Icons.ArrowRight /></div>
                             </button>
 
-                            {/* Quiz: Weak */}
                             <button onClick={() => startQuiz('weak')} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-amber-400 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner"><Icons.Zap /></div>
@@ -419,7 +431,6 @@
                                 <div className="text-amber-300"><Icons.ArrowRight /></div>
                             </button>
 
-                            {/* Quiz: Random */}
                             <button onClick={() => startQuiz('random')} className="w-full bg-white p-5 rounded-3xl border-l-4 border-l-teal-400 shadow-md flex items-center justify-between active:scale-[0.98] transition-all group">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 shadow-inner"><Icons.Edit /></div>
@@ -442,7 +453,6 @@
                         <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden relative">
                             <div className="flex-1 px-4 overflow-y-auto py-4 scrollbar-hide pb-10 smooth-scroll">
                                 <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden relative min-h-[400px]">
-                                    {/* Priority Indicator Bar */}
                                     <div className={`h-1.5 w-full ${currentStudyWord.priority <= 2 ? 'bg-green-500' : 'bg-red-500'}`}></div>
                                     
                                     <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
@@ -451,14 +461,12 @@
                                         <button onClick={() => { if(currentIndex < studyQueue.length - 1) { setCurrentIndex(p => p + 1); setActivePosTab(0); } }} disabled={currentIndex === studyQueue.length - 1} className="p-3 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 disabled:opacity-50 active:scale-95 transition-transform"><Icons.ArrowRight /></button>
                                     </div>
                                     
-                                    {/* POS Tabs + Familiar Button */}
                                     <div className="flex items-center border-b border-slate-100 bg-white sticky top-0 z-10 pt-2 px-2 gap-2 overflow-x-auto scrollbar-hide">
                                         <div className="flex-1 flex justify-center gap-2">
                                             {currentStudyWord.meanings.map((m, idx) => (
                                                 <button key={idx} onClick={() => { setActivePosTab(idx); speak(currentStudyWord.word); }} className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${activePosTab === idx ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}>{m.pos}</button>
                                             ))}
                                         </div>
-                                        {/* Toggle Familiarity Button */}
                                         <button onClick={toggleFamiliarity} className={`ml-auto mb-2 p-2 rounded-xl flex items-center gap-1 text-xs font-bold transition-all shadow-sm ${currentStudyWord.priority <= 2 ? 'bg-green-100 text-green-700 border border-green-200 ring-2 ring-green-100' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'}`}>
                                             {currentStudyWord.priority <= 2 ? <><Icons.Check /> 熟悉</> : <><Icons.Unlock /> 設為熟悉</>}
                                         </button>
@@ -506,21 +514,36 @@
                             {!quizFinished ? (
                                 <div className="flex-1 flex flex-col justify-center min-h-[500px]">
                                     <div className="flex justify-between mb-4 font-bold text-slate-400 text-xs uppercase tracking-wider"><span>Q: {currentQuizIndex + 1}/{quizQueue.length}</span><span className="text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Score: {quizScore}</span></div>
-                                    <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden">
+                                    <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden relative">
                                         <div className={`py-3 text-center text-white text-[10px] font-extrabold tracking-[0.2em] uppercase ${quizType === 'top10' ? 'bg-red-600' : quizType === 'weak' ? 'bg-amber-500' : 'bg-teal-600'}`}>
                                             {quizType === 'top10' ? 'TOP 10 CHALLENGE' : quizType === 'weak' ? 'WEAK WORDS' : 'RANDOM QUIZ'}
                                         </div>
-                                        <div className="p-8 text-center">
-                                            {/* Quiz Hint (POS + Definition) */}
+                                        
+                                        {/* Show/Hide Chinese Toggle */}
+                                        <button onClick={() => setShowChineseInQuiz(!showChineseInQuiz)} className="absolute top-14 right-4 text-slate-400 hover:text-indigo-600 transition-colors p-2">
+                                            {showChineseInQuiz ? <Icons.Eye /> : <Icons.EyeOff />}
+                                        </button>
+
+                                        <div className="p-8 text-center pt-10">
                                             <div className="mb-6">
-                                                <div className="inline-block bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold uppercase mb-2">
-                                                    {quizQueue[currentQuizIndex].meanings[0].pos}
+                                                <div className="flex items-center justify-center gap-2 mb-3">
+                                                    <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold uppercase">{quizQueue[currentQuizIndex].meanings[0].pos}</span>
                                                 </div>
-                                                <div className="text-3xl font-extrabold text-slate-800 mb-2 leading-tight">
-                                                    {quizQueue[currentQuizIndex].meanings[0].items[0].def_zh}
+                                                
+                                                {/* Definition Area */}
+                                                <div className="min-h-[80px] flex items-center justify-center">
+                                                    {showChineseInQuiz ? (
+                                                        <div className="text-3xl font-extrabold text-slate-800 leading-tight animate-in fade-in">
+                                                            {quizQueue[currentQuizIndex].meanings[0].items[0].def_zh}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-sm text-slate-400 font-bold tracking-widest uppercase border-2 border-dashed border-slate-200 px-4 py-2 rounded-xl">
+                                                            Chinese Hidden
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                {/* Darker text for visibility */}
-                                                <div className="text-xl text-slate-800 font-bold leading-relaxed opacity-90">
+
+                                                <div className="text-xl text-slate-800 font-bold leading-relaxed opacity-90 mt-4">
                                                     {quizQueue[currentQuizIndex].meanings[0].items[0].def_en}
                                                 </div>
                                             </div>
@@ -536,7 +559,6 @@
                                                 <form onSubmit={handleSubmitSpelling} className="flex flex-col gap-6">
                                                     <div className="relative">
                                                         <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-2xl font-bold">{quizQueue[currentQuizIndex].word.charAt(0)}</span>
-                                                        {/* Input: no autoFocus on mobile to prevent keyboard popup covering info */}
                                                         <input 
                                                             ref={inputRef}
                                                             value={userInput} 
